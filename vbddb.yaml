@@ -1,0 +1,86 @@
+﻿kind: Pod
+apiVersion: v1
+metadata:
+  name: vbudi-dbsetup-test-02
+  namespace: b2bi-nonprod
+spec:
+  volumes:
+    - name: resources
+      persistentVolumeClaim:
+        claimName: ibm-sfg-b2bi-nonprod-sfg-resources
+    - name: configmap-resources-volume
+      configMap:
+        name: ibm-sfg-b2bi-nonprod-sfg-config
+        defaultMode: 420
+  containers:
+    - name: db-setup
+      image: 'cp.icr.io/cp/ibm-sfg/sfg:6.1.0.0'
+      command:
+        - /bin/bash
+        - '-c'
+        - '--'
+      args:
+        - while true; do sleep 30; done;
+      # args:
+      #   - b2bi_setup
+      #   - deploy_db
+      envFrom:
+        - secretRef:
+            name: b2b-system-passphrase-secret
+        - secretRef:
+            name: b2b-db-secret
+        - secretRef:
+            name: b2b-jms-secret
+      env:
+        - name: TZ
+          value: UTC
+        - name: LICENSE
+          value: accept
+        - name: UPGRADE_COMPATIBILITY_VERIFIED
+          value: 'false'
+        - name: SANDBOX_CC_INSTALL
+          value: 'true'
+      volumeMounts:
+        - name: resources
+          mountPath: /ibm/resources
+        - name: configmap-resources-volume
+          mountPath: /ibm/resources/setup.cfg
+          subPath: setup.cfg
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        capabilities:
+          drop:
+            - MKNOD
+        privileged: false
+        runAsUser: 1010
+        readOnlyRootFilesystem: false
+        allowPrivilegeEscalation: false
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
+  dnsPolicy: ClusterFirst
+  serviceAccountName: b2bi
+  serviceAccount: b2bi
+  securityContext:
+    runAsUser: 1010
+    runAsNonRoot: true
+    supplementalGroups:
+      - 65534
+    fsGroup: 1010
+  imagePullSecrets:
+    - name: ibm-entitlement-key
+  schedulerName: default-schedulermv 
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/memory-pressure
+      operator: Exists
+      effect: NoSchedule
+  priority: 0
+  enableServiceLinks: true
+  preemptionPolicy: PreemptLowerPriority

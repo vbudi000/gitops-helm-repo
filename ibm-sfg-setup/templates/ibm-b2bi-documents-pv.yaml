@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "270"
+  name: documents-b2bi-prod
+  labels:
+    intent: documents
+spec:
+  storageClassName: ocs-storagecluster-cephfs
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.17.96.132
+    path: /data/registry/documents

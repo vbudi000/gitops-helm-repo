@@ -1,0 +1,16 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: sterlingb2bitoolkit-b2bi-prod-pv
+  labels:
+    failure-domain.beta.kubernetes.io/region: 
+    failure-domain.beta.kubernetes.io/zone: 
+spec:
+  storageClassName: ocs-storagecluster-cephfs
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.17.96.132
+    path: /data/registry

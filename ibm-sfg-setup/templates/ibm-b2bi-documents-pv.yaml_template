@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "270"
+  name: documents-${NS}
+  labels:
+    intent: documents
+spec:
+  storageClassName: ${RWX_STORAGECLASS}
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: ${NFS_SERVER_DOC}
+    path: ${NFS_PATH_DOC}

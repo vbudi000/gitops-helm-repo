@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "270"
+  name: resources-b2bi-prod
+  labels:
+    intent: resources
+spec:
+  storageClassName: ocs-storagecluster-cephfs
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadOnlyMany
+  nfs:
+    server: 10.17.96.132
+    path: /data/registry/resources

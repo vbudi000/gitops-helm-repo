@@ -1,0 +1,27 @@
+# (C) Copyright 2019 Syncsort Incorporated. All rights reserved.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-cr
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - {{ printf "%s-%s-%s" $namespace $serviceAccount . }}
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-cr
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "service-account.name" . }}
+    namespace: {{ .Release.Namespace }}
