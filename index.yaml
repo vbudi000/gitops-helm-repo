@@ -3,12 +3,12 @@ entries:
   service-account:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-15T19:13:23.303113-05:00"
+    created: "2022-06-15T19:25:22.825887-05:00"
     description: A Helm chart for Kubernetes
-    digest: 636ea95d3f65636112bc50dd1d0b36481fa5c98b11c27292e5bf80dc875a72c1
+    digest: ea967b4fe8d2e7ab4b56e00c1ef10bca67d4c70e2f537845d977c35b25ace8ee
     name: service-account
     type: application
     urls:
     - service-account-0.6.1.tgz
     version: 0.6.1
-generated: "2022-06-15T19:13:23.3025-05:00"
+generated: "2022-06-15T19:25:22.825425-05:00"

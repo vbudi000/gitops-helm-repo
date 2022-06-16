@@ -1,4 +1,9 @@
-# (C) Copyright 2019 Syncsort Incorporated. All rights reserved.
+{{- if eq (include "service-account.isOpenShift" .) "true" -}}
+{{ $namespace := .Release.Namespace }}
+{{ $serviceAccount := include "service-account.name" . }}
+{{ $saName := printf "system:serviceaccount:%s:%s" $namespace $serviceAccount }}
+{{ $labels := include "service-account.labels" . }}
+{{- if eq "privileged" . }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -25,3 +30,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "service-account.name" . }}
     namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
