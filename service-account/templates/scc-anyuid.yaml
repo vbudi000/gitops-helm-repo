@@ -83,8 +83,8 @@ roleRef:
   name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-cr
 subjects:
   - kind: ServiceAccount
-    name: $serviceAccount
-    namespace: $namespace  
+    name: {{ $serviceAccount }}
+    namespace: {{ $namespace }}  
 {{- end }}
 {{- end }}
 {{- end }}

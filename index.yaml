@@ -3,7 +3,17 @@ entries:
   service-account:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-15T20:52:30.351467-05:00"
+    created: "2022-06-15T21:02:06.16026-05:00"
+    description: A Helm chart for Kubernetes
+    digest: fe1ac94013522f94a82b7d078d294514dda8b114ea24bfda05985b292b2fddd4
+    name: service-account
+    type: application
+    urls:
+    - service-account-0.6.5.tgz
+    version: 0.6.5
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-06-15T21:02:06.159898-05:00"
     description: A Helm chart for Kubernetes
     digest: 594f8d0a1c4c1528e9ed51235b252303161e9e1a33203aeeec9c5a474e77ee9c
     name: service-account
@@ -13,7 +23,7 @@ entries:
     version: 0.6.4
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-15T20:52:30.35121-05:00"
+    created: "2022-06-15T21:02:06.159582-05:00"
     description: A Helm chart for Kubernetes
     digest: b2ea02c3b829bc600f104791df0ed7b760ed0dfa1993563008c2bac1b0c3930a
     name: service-account
@@ -21,4 +31,4 @@ entries:
     urls:
     - service-account-0.6.3.tgz
     version: 0.6.3
-generated: "2022-06-15T20:52:30.35076-05:00"
+generated: "2022-06-15T21:02:06.15904-05:00"
