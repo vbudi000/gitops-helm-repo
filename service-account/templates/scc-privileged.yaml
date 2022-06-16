@@ -33,10 +33,6 @@ allowedUnsafeSysctls:
 defaultAddCapabilities: null
 fsGroup:
   type: RunAsAny
-groups:
-  - system:cluster-admins
-  - system:nodes
-  - system:masters
 priority: null
 readOnlyRootFilesystem: false
 requiredDropCapabilities: null
@@ -52,6 +48,41 @@ users:
   - {{ $saName }}
 volumes:
   - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-3"
+    argocd.argoproj.io/sync-options: Validate=false
+    kubernetes.io/description: 'privileged allows access to all privileged and host
+      features and the ability to run as any user, any group, any fsGroup, and with
+      any SELinux context.  WARNING: this is the most relaxed SCC and should be used
+      only for cluster administration. Grant with caution.'
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-cr
+rules:
+- apiGroups:
+  - security.openshift.io
+  resourceNames:
+  - {{ printf "%s-%s-%s" $namespace $serviceAccount . }}
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-crb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s-%s-%s" $namespace $serviceAccount . }}-cr
+subjects:
+  - kind: ServiceAccount
+    name: $serviceAccount
+    namespace: $namespace  
 {{- end }}
 {{- end }}
 {{- end }}
