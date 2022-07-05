@@ -223,11 +223,11 @@ spec:
             {{ end }}
             {{ if .Values.setupfile.servers.enableConsoleLogs }}
             - name: CONSOLE_LOGGING
-              value: true
+              value: "true"
             {{ else }}
             - name: CONSOLE_LOGGING
-              value: false
             {{ end }}
+              value: "false"
             - name: LOGGER_LEVEL
               value: {{ .Values.communitymanager.nonprod.setupfile.loggerLevel }}
           envFrom:

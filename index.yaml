@@ -3,7 +3,7 @@ entries:
   ibm-pem-standard-prod:
   - apiVersion: v2
     appVersion: 6.2.0.2
-    created: "2022-07-05T13:26:20.612325-05:00"
+    created: "2022-07-05T15:47:04.150769-05:00"
     description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
       resources required to onboard new partners while managing and maintaining existing
       partners. By automating the onboarding process, Partner Engagement Manager limits
@@ -33,7 +33,36 @@ entries:
   ibm-pem-standard-vbudi:
   - apiVersion: v2
     appVersion: 6.2.0.2
-    created: "2022-07-05T13:26:20.62326-05:00"
+    created: "2022-07-05T15:47:04.171208-05:00"
+    description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
+      resources required to onboard new partners while managing and maintaining existing
+      partners. By automating the onboarding process, Partner Engagement Manager limits
+      costly manual errors and increases efficiency as partners can maintain their
+      own records. Documentation For additional details regarding install parameters
+      check https://www.ibm.com/docs/en/spems/6.2.0?topic=installing-Prerequisites-Certified-Container.
+      License By installing this product you accept the license terms http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-MILI-BQXF4G&title=IBM%20Sterling%20B2B%20Integrator%20Certified%20Container%20V6.1."
+    digest: a961a4a189e0186f753ff552178d1beae30a561f29402a37b763bc56e8660a35
+    home: https://www.ibm.com/support/knowledgecenter/SS3JSW_6.1.0/kc_welcome_b2bi.html
+    icon: https://raw.githubusercontent.com/IBM/charts/master/logo/ibm-pem-icon.png
+    keywords:
+    - pem
+    - pemstandard
+    - Commercial
+    - amd64
+    - Automation
+    - RHOCP
+    - Other
+    kubeVersion: '>=1.17'
+    maintainers:
+    - name: IBM
+    name: ibm-pem-standard-vbudi
+    type: application
+    urls:
+    - https://vbudi000.github.io/gitops-helm-repo/ibm-pem-standard-vbudi-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 6.2.0.2
+    created: "2022-07-05T15:47:04.165577-05:00"
     description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
       resources required to onboard new partners while managing and maintaining existing
       partners. By automating the onboarding process, Partner Engagement Manager limits
@@ -62,7 +91,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 6.2.0.2
-    created: "2022-07-05T13:26:20.617811-05:00"
+    created: "2022-07-05T15:47:04.158119-05:00"
     description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
       resources required to onboard new partners while managing and maintaining existing
       partners. By automating the onboarding process, Partner Engagement Manager limits
@@ -92,7 +121,7 @@ entries:
   ibm-sfg-db2:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-07-05T13:26:20.62456-05:00"
+    created: "2022-07-05T15:47:04.172649-05:00"
     description: A Helm chart for Kubernetes
     digest: f208446a3ce717e4080afb8fc425fd94e388e7f9a81a945927f04cb8ba0eccd3
     name: ibm-sfg-db2
@@ -102,7 +131,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-07-05T13:26:20.623956-05:00"
+    created: "2022-07-05T15:47:04.171881-05:00"
     description: A Helm chart for Kubernetes
     digest: 09ea116b0a86662c80554a9ac10dfc0edf2e997d820c82c216326bcd0f4e0d1b
     name: ibm-sfg-db2
@@ -113,7 +142,7 @@ entries:
   service-account:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-07-05T13:26:20.626456-05:00"
+    created: "2022-07-05T15:47:04.174914-05:00"
     description: A Helm chart for Kubernetes
     digest: fe1ac94013522f94a82b7d078d294514dda8b114ea24bfda05985b292b2fddd4
     name: service-account
@@ -123,7 +152,7 @@ entries:
     version: 0.6.5
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-07-05T13:26:20.625821-05:00"
+    created: "2022-07-05T15:47:04.174223-05:00"
     description: A Helm chart for Kubernetes
     digest: 594f8d0a1c4c1528e9ed51235b252303161e9e1a33203aeeec9c5a474e77ee9c
     name: service-account
@@ -133,7 +162,7 @@ entries:
     version: 0.6.4
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-07-05T13:26:20.62514-05:00"
+    created: "2022-07-05T15:47:04.173455-05:00"
     description: A Helm chart for Kubernetes
     digest: b2ea02c3b829bc600f104791df0ed7b760ed0dfa1993563008c2bac1b0c3930a
     name: service-account
@@ -141,4 +170,4 @@ entries:
     urls:
     - https://vbudi000.github.io/gitops-helm-repo/service-account-0.6.3.tgz
     version: 0.6.3
-generated: "2022-07-05T13:26:20.607562-05:00"
+generated: "2022-07-05T15:47:04.146706-05:00"

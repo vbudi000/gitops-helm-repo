@@ -1,8 +1,8 @@
 image:
   name: "cp.icr.io/cp/ibm-pem/pem" #Provide the value in double quotes
   tag: "6.2.0.2" #Specify the tag name
-  pullPolicy:
-  pullSecret: "" #Provide the pull secret name
+  pullPolicy: IfNotPresent
+  pullSecret: "ibm-entitlement-key" #Provide the pull secret name
 
 arch: amd64
 license: true
@@ -22,7 +22,8 @@ volumeClaims:
         ssomigrator: ssomigrator #specify the directory for ssomigrator data files inside a persistent volume for resources with required permissions
         pcm: pcm #specify the directory for pcm jars inside a persistent volume for resources with required permissions
   logs:
-      enabled: true #Specify the values to true or false based on requriement
+      enabled: false #Specify the values to true or false based on requriement
+      enableAppLogOnConsole: true
       subpath:
         migrator: migrator #specify the directory for migrator logs inside a persistent volume for logs with required permissions
         dbutils: dbutil #specify the directory for dbutils logs inside a persistent volume for logs with required permissions
@@ -60,7 +61,7 @@ dbsetup:
       cpu: "500m"
       ephemeral-storage: "3Gi" #Specify the maximimum ephemeral-storage a pod can utilize
   setupfile:
-    passphrasesecret:
+    passphrasesecret: ibm-pem-secret
     migrator:
       default_sponsor: true
     ## For more information about configuring the properties of Setup.cfg file,
@@ -79,7 +80,7 @@ dbsetup:
 
     # proxy_password: #Provide the secret name
     # proxy_protocol:
-    # customer_id: ## Specify the customer ID. Ensure that the customer ID that you specify matches with your Bluemix ID that you have registered to download IBM PEM image
+    customer_id: vbudi@us.ibm.com ## Specify the customer ID. Ensure that the customer ID that you specify matches with your Bluemix ID that you have registered to download IBM PEM image
     ## DATABASE AND SSL PROPERTIES THAT ARE COMMON TO ALL THE APPLICATIONS
     db_type: DB2 #Specify the database type which you are using either DB2 or Oracle or mssql.
     ## Enable or disable the SSL connection for master and testmode database
@@ -89,11 +90,11 @@ dbsetup:
     # Specify the database details for the master schema.
     #These propertiesenable you to start the following pods: IBM PEM, PartnerRepository, Partner Provisioner, Purge, Migrator,and DBUtils. ,
     db_port: 50000 #specify the port
-    db_host: db2-lb.pem.svc #specify the host
+    db_host: pemdb.pem.svc #specify the host
     db_name: pemdb #Specify the DATABASE Name
-    db_schema: pem #Specify the Schema name
-    db_user: db2inst1 #Specify the DB username
-    db_password: db2inst1 #Specify the secret
+    db_schema: DB2INST1 #Specify the Schema name
+    db_user: DB2INST1 #Specify the DB username
+    db_password: ibm-pem-secret  #Specify the secret
     db_driver: com.ibm.db2.jcc.DB2Driver #Specify the corresponding driver details for oracle or DB2 or mssql depnding on the db_type that is selected. For example, for oracle, set the values of db_driver to oracle.jdbc.OracleDriver. For DB2, set com.ibm.db2.jcc.DB2Driver. For mssql, set com.microsoft.sqlserver.jdbc.SQLServerDriver.
     ## DB CONNECTION MANAGER DETAILS. COMMON FOR IBM PEM, PARTNER REPOSITORY &
     #PARTNER PROVISIONER
@@ -126,14 +127,14 @@ dbsetup:
     # db_mssql_hostNameInCertificate: #Specify the host name to be used in validating the SQL Server TLS/SSL certificate, if hostname used in place of db_host ip then we do not have to provide the value for *_db_mssql_hostNameInCertificate (or not a mandatory field if we provide the hostname in the db_host property)
     # db_mssql_sslProtocol: #Specify the TLS protocol to be considered during secure connection. Possible values are: TLS, TLSv1, TLSv1.1, and TLSv1.2. The default value will be TLSv1.2 if no value specified.
 
-    # testmode_db_port: ## Specify the database details for the test mode schema. These properties enable you to start the following docker containers: IBM PEM, Partner Provisioner, Migrator, Master key regenerator, and DBUtils. Specify the port
-    # testmode_db_host: # Specify the database host
-    # testmode_db_name: #Specify the Database Name
-    # testmode_db_schema: #Specify the Database Schema
-    # testmode_db_user: # Specify the databse user name
-    # #Provide the secret name
-    # testmode_db_password: #Provide the secret name
-    # testmode_db_driver: #Specify the database driver Name
+    testmode_db_port: 50000 ## Specify the database details for the test mode schema. These properties enable you to start the following docker containers: IBM PEM, Partner Provisioner, Migrator, Master key regenerator, and DBUtils. Specify the port
+    testmode_db_host: pemtest.pem.svc # Specify the database host
+    testmode_db_name: pemdb #Specify the Database Name
+    testmode_db_schema: DB2INST2 #Specify the Database Schema
+    testmode_db_user: DB2INST1 # Specify the databse user name
+    #Provide the secret name
+    testmode_db_password: ibm-pem-secret #Provide the secret name
+    testmode_db_driver: com.ibm.db2.jcc.DB2Driver #Specify the database driver Name
     ## TESTMODE DB CONNECTION MANAGER DETAILS. COMMON FOR IBM PEM, PARTNER
     #REPOSITORY & PARTNER PROVISIONER
     ## Specify the maximum pool size of the test mode schema's database
@@ -171,7 +172,7 @@ setupfile:
   servers:
     ssl_protocol: #Specify the protocol for ECC certificate support.
     enabled_ciphers: #Specify the ciphers for ECC certificate support.
-    enableConsoleLogs: #Specify true or false for enabling or disabling logging in console 
+    enableConsoleLogs: true #Specify true or false for enabling or disabling logging in console 
 
 ssoSeas:
   enable: false #set the property to true to enable ssl connection
@@ -229,9 +230,9 @@ pem:
       #For example, jvm_options: "-Xms4g -Xmx4g".
       jvm_options: # Specify the list of JVM options for the servers, and separated by space.
 
-      keystore_password: #Specify the secret name
-      keystore_alias: #Specify the secret alias
-      keystore_filename: #Specify the secret name and key inside secret has to be same as secret name
+      keystore_password: password #Specify the secret name
+      keystore_alias: pem #Specify the secret alias
+      keystore_filename: ibm-pem.jks #Specify the secret name and key inside secret has to be same as secret name
 
       # The default value is 100 MB.
       max_file_size: 100 # Specify the maximum size for the server log file in MB.
@@ -282,9 +283,9 @@ pp:
       #Repository, and Partner Provisioner. The keystore file (.jks file) has to be
       #copied in the <mount location>/resources/security folder.
       #Provide the secret name
-      keystore_password: #Specify the secret name
-      keystore_alias: #Specify the secret alias
-      keystore_filename: #Specify the secret name and key inside secret has to be same as secret name
+      keystore_password: password #Specify the secret name
+      keystore_alias: pem #Specify the secret alias
+      keystore_filename: ibm-pem.jks #Specify the secret name and key inside secret has to be same as secret name
       # The default value is 100 MB.
       max_file_size: 100 # Specify the maximum size for the server log file in MB.
 
@@ -311,7 +312,7 @@ pp:
       provisioner_request_queue: PEM_request #Specify the request queue name, which is used for communication between PEM Partner Provisioner and PEM Partner Repository using embedded JMS. Ensure that the queue name is same for both the service components.
       provisioner_response_queue: PEM_response #Specify the response queue name, which is used for communication between PEM Partner Provisioner and PEM Partner Repository using embedded JMS. Ensure that the queue name is same for both the service components.
       remote_server_ssl: false #Specify true for SSL (BootstrapSecureMessaging) and false for non-SSL (BootstrapBasicMessaging).
-      remote_server_host:  #service hostname of jms service releasename-pp-jms-service.namespace.domain.com
+      remote_server_host: ibm-pem-pp-jms-service.pem.svc #service hostname of jms service releasename-pp-jms-service.namespace.domain.com
       remote_server_port: 80
 
 pr:
@@ -351,9 +352,9 @@ pr:
       #For example, jvm_options: "-Xms4g -Xmx4g".
       jvm_options: ## Specify the list of JVM options for the servers, and separated by space.
 
-      keystore_password: #Specify the secret name
-      keystore_alias: #Specify the secret alias
-      keystore_filename: #Specify the secret name and key inside secret has to be same as secret name
+      keystore_password: password #Specify the secret name
+      keystore_alias: pem #Specify the secret alias
+      keystore_filename: ibm-pem.jks #Specify the secret name and key inside secret has to be same as secret name
       # The default value is 100 MB.
       max_file_size: 100 # Specify the maximum size for the server log file in MB.
 
@@ -380,7 +381,7 @@ pr:
       provisioner_request_queue: PEM_request #Specify the request queue name, which is used for communication between PEM Partner Provisioner and PEM Partner Repository using embedded JMS. Ensure that the queue name is same for both the service components.
       provisioner_response_queue: PEM_response #Specify the response queue name, which is used for communication between PEM Partner Provisioner and PEM Partner Repository using embedded JMS. Ensure that the queue name is same for both the service components.
       remote_server_ssl: false #Specify true for SSL (BootstrapSecureMessaging) and false for non-SSL (BootstrapBasicMessaging).
-      remote_server_host:  #service hostname of jms service releasename-pp-jms-service.namespace.domain.com
+      remote_server_host: ibm-pem-pp-jms-service.pem.svc #service hostname of jms service releasename-pp-jms-service.namespace.domain.com
       remote_server_port: 80
 
 ## If you are using WebSphere MQ (WMQ) as your JMS service provider, specify
@@ -535,9 +536,9 @@ gateway:
 
       jvm_options: ## Specify the list of JVM options for the servers, and separated by space. For example, jvm_options: "-Xms4g -Xmx4g".
 
-      keystore_password: #Specify the secret name
-      keystore_alias: #Specify the secret alias
-      keystore_filename: #Specify the secret name and key inside secret has to be same as secret name
+      keystore_password: password #Specify the secret name
+      keystore_alias: pem #Specify the secret alias
+      keystore_filename: ibm-pem.jks #Specify the secret name and key inside secret has to be same as secret name
 
       max_file_size: 100 # Specify the maximum size for the server log file in MB.
 
@@ -559,7 +560,7 @@ gateway:
 communitymanager:
   install: true
   image:
-    repository: "cp.icr.io/cp/ibm-pem/pem" #Specify the repository
+    repository: "cp.icr.io/cp/ibm-pem/pem-cm" #Specify the repository
     pullPolicy:  #Specify te image pull policy
     tag: "6.2.0.2" #Specify the tag name
     pullSecret: #Provide the pull secret name
@@ -652,7 +653,7 @@ communitymanager:
           outbound: CM_MailBox_GET_RoutingRule_Outbound #CM_MailBox_GET_RoutingRule_Outbound , Outbound mailbox bootstrap business process
         user:
           cmks: #This passphrase will be used while creating profile in SI create a scret and with SI password. provide the secret
-          cmks_validation: true #If you want to validate aboove passphrase when applicaton get starts then make this value as true or else false
+          cmks_validation: false #If you want to validate aboove passphrase when applicaton get starts then make this value as true or else false
           cmks_validation_profile: CM_Profile #TestProfile, We have to provide the SFTP profile which is available in SI with password as Expl@re
         b2bi_api:
           active: true #This will say whether B2Bi API available or not
@@ -698,7 +699,7 @@ communitymanager:
                 security_protocol: TLS 1.2
                 cipher_suites: ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
       ssp: #IBM SSP API Configuration
-        active: true #if we have SSP APIs enable then make it as true or else false
+        active: false #if we have SSP APIs enable then make it as true or else false
         api:
           username: ssp_user #User name to authenticate the API
           cmks: SSP_Password #Password or Secret of the above user
@@ -870,7 +871,7 @@ communitymanager:
       capacity: 100Mi
       storageclass: slow
   nonprod:
-    enable: false #set to true to deploy non prod pcm
+    enable: true #set to true to deploy non prod pcm
     setupfile:
       acceptLicence: true #We should make accept-license should be true for pcm installation
       cm:
@@ -958,7 +959,7 @@ communitymanager:
           outbound: CM_MailBox_GET_RoutingRule_Outbound #CM_MailBox_GET_RoutingRule_Outbound , Outbound mailbox bootstrap business process
         user:
           cmks: #This passphrase will be used while creating profile in SI create a scret and with SI password. provide the secret
-          cmks_validation: true #If you want to validate aboove passphrase when applicaton get starts then make this value as true or else false
+          cmks_validation: false #If you want to validate aboove passphrase when applicaton get starts then make this value as true or else false
           cmks_validation_profile: CM_Profile #TestProfile, We have to provide the SFTP profile which is available in SI with password as Expl@re
         b2bi_api:
           active: true #This will say whether B2Bi API available or not
@@ -1004,7 +1005,7 @@ communitymanager:
                 security_protocol: TLS 1.2
                 cipher_suites: ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
       ssp: #IBM SSP API Configuration
-        active: true #if we have SSP APIs enable then make it as true or else false
+        active: false #if we have SSP APIs enable then make it as true or else false
         api:
           username: ssp_user #User name to authenticate the API
           cmks: SSP_Password #Password or Secret of the above user
