@@ -21,4 +21,4 @@ maintainers:
 - name: IBM
 name: ibm-pem-standard-vbudi
 type: application
-version: 1.0.0
+version: 1.0.1
