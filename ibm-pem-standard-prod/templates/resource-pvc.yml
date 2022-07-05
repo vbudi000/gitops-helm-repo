@@ -1,5 +1,5 @@
 {{ if .Values.license }}
-{{ if .Values.volumeClaims.resources.enabled-false }}
+{{ if .Values.volumeClaims.resources.enabledfalse }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
