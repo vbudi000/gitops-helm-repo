@@ -1,0 +1,19 @@
+{{ if .Values.license }}
+{{ if .Values.pem.enable }}
+{{- if .Values.pem.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-pem-hpac
+  labels: {{- include "pem-pod.labels" . | nindent 5 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-pem-deployment
+  minReplicas: {{ .Values.pem.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.pem.autoscaling.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.pem.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+{{ end }}

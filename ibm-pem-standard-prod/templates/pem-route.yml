@@ -1,0 +1,21 @@
+{{ if .Values.license }}
+{{ if .Values.pem.enable }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Release.Name }}-pem-route
+  labels: {{- include "pem-pod.labels" . | nindent 5 }}
+spec:
+  {{ if .Values.pem.hostname }}
+  host: {{ .Values.pem.hostname }}
+  {{ end }}
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-pem-service
+  port:
+    targetPort: pem-port
+  tls:
+    termination: {{ .Values.pem.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.pem.route.tls.insecureEdgeTerminationPolicy }}
+{{- end }}
+{{ end }}

@@ -1,0 +1,19 @@
+{{ if .Values.license }}
+{{ if .Values.pp.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pp-jms-service
+  labels: {{- include "pp-pod.labels" . | nindent 5 }}
+spec:
+  selector: {{- include "pp.selectorLabels" . | nindent 7 }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.pp.setupfile.servers.remote_server_port}}
+      {{ if .Values.pp.setupfile.servers.remote_server_ssl}}
+      targetPort: 7286
+      {{ else }}
+      targetPort: 7276
+      {{ end }}
+{{- end }}
+{{ end }}

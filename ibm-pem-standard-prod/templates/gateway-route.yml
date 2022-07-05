@@ -1,0 +1,23 @@
+{{ if .Values.license }}
+{{ if .Values.gateway.enable }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Release.Name }}-gateway-route
+  labels: {{- include "api-pod.labels" . | nindent 5 }}
+  annotations:
+    "haproxy.router.openshift.io/set-forwarded-headers": "never"
+spec:
+  {{ if .Values.gateway.hostname }}
+  host: {{ .Values.gateway.hostname }}
+  {{ end }}
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-gateway-service
+  port:
+    targetPort: gateway-port
+  tls:
+    termination: {{ .Values.gateway.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.gateway.route.tls.insecureEdgeTerminationPolicy }}
+{{ end }}
+{{ end }}

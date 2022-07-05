@@ -1,0 +1,19 @@
+{{ if .Values.license }}
+{{ if .Values.pr.enable }}
+{{- if .Values.pr.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-pr-hpac
+  labels: {{- include "pr-pod.labels" . | nindent 5 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-pr-deployment
+  minReplicas: {{ .Values.pr.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.pr.autoscaling.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.pr.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+{{ end }}

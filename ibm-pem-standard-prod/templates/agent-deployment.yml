@@ -1,0 +1,177 @@
+{{ if .Values.license }}
+{{ if .Values.agent.enable }}
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: {{ .Release.Name }}-agent-deployment
+  labels: {{- include "agent-pod.labels" . | nindent 5 }}
+spec:
+  replicas: {{ .Values.agent.replicas }}
+  selector:
+    matchLabels: {{- include "agent.selectorLabels" . | nindent 7 }}
+  template:
+    metadata:
+      labels: {{- include "agent-pod.labels" . | nindent 9 }}
+      annotations:
+        productID: {{- include "ibmpem.metering.productId" . | indent 1 }}
+        productMetric: {{- include "ibmpem.metering.productMetric" . | indent 1 }}
+        productName: {{- include "ibmpem.metering.productName" . | indent 1 }}
+        productVersion: {{- include "ibmpem.metering.productVersion" . | indent 1 }}
+        productChargedContainers: {{- include "ibmpem.metering.productChargedContainers" . | indent 1 }}
+        checksum/config: {{ include (print $.Template.BasePath "/agentconfigmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      affinity: {{- include "ibmpem.affinity" . | nindent 9 }}
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: {{ .Release.Name }}-agent-setupfile
+        configMap:
+            name: {{ .Release.Name }}-agent-setupfile
+        #volumes for Resources
+      - name: {{ .Release.Name }}-resources
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-resources-pvc
+        #volumes for logs
+      {{ if .Values.volumeClaims.logs.enabled }}
+      - name: {{ .Release.Name }}-logs
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-logs-pvc
+      {{ end }}
+        #localtime (timezone for pods)
+      - name: {{ .Release.Name }}-timezone
+        configMap:
+            name: {{ .Values.timezone.configmapname}}
+        #keystore file for DB
+      {{ if .Values.dbsetup.setupfile.ssl_connection }}
+      - name: {{ .Release.Name }}-db-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.db_sslTrustStoresecret }}
+        #keystore file for Test DB
+      - name: {{ .Release.Name }}-testdb-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoresecret }}
+      {{ end }}
+      #keystores for ssoSeas
+      {{ if .Values.ssoSeas.enable }}
+      {{ if .Values.ssoSeas.truststoreSecret }}
+      - name: {{ .Release.Name }}-sso-truststore
+        secret:
+           secretName: {{ .Values.ssoSeas.truststoreSecret }}
+      {{ end }}
+      {{ if .Values.ssoSeas.keystoreSecret }}
+      - name: {{ .Release.Name }}-sso-keystore
+        secret:
+           secretName: {{ .Values.ssoSeas.keystoreSecret }}
+      {{ end }}
+      {{ end }}
+        #PassPhrase
+      - name: {{ .Release.Name }}-passphrase
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.passphrasesecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+        runAsNonRoot: true
+        supplementalGroups:
+          {{- range $.Values.security.supplementalGroups }}
+          - {{ . }}
+          {{- end }}
+        fsGroup: {{ .Values.security.fsGroup | default "1011" }}
+      containers:
+        - name: {{ .Release.Name }}-agent
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources: {{- toYaml .Values.agent.resources | nindent 14 }}
+          volumeMounts:
+            #volumes for logs
+          {{ if .Values.volumeClaims.logs.enabled }}
+          - name: {{ .Release.Name }}-logs
+            mountPath: /opt/IBM/Agent/bin/log
+            subPath: {{ .Values.volumeClaims.logs.subpath.agent }}
+          {{ end }}
+            #volumes for db driver jar
+          - name: {{ .Release.Name }}-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: {{ .Values.volumeClaims.resources.subpath.dbdrivers }}
+            readOnly: true
+            #Setup.cfg file
+          - name: {{ .Release.Name }}-agent-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+            #localtime (timezone for pod)
+          - name: {{ .Release.Name }}-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore files for db
+          {{ if .Values.dbsetup.setupfile.ssl_connection }}
+            #master DB keystore
+          - name: {{ .Release.Name }}-db-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+            subPath: {{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+            #Test DB keystore
+          - name: {{ .Release.Name }}-testdb-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+            subPath: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+          {{ end }}
+          #keystore and trust_store for sso
+          {{ if .Values.ssoSeas.enable }}
+          {{ if .Values.ssoSeas.truststoreSecret }}
+          - name: {{ .Release.Name }}-sso-truststore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.ssoSeas.truststoreName }}
+            subPath: {{ .Values.ssoSeas.truststoreName }}
+          {{ end }}
+          {{ if .Values.ssoSeas.keystoreSecret }}
+          - name: {{ .Release.Name }}-sso-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.ssoSeas.keystoreName }}
+            subPath: {{ .Values.ssoSeas.keystoreName }}
+          {{ end }}
+          {{ end }}
+            #passphrase file
+          - name: {{ .Release.Name }}-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          env:
+          - name: application
+            value: agent
+          envFrom:
+          #Optional
+          {{ if .Values.dbsetup.setupfile.proxy_password }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.proxy_password }}
+          {{ end }}
+          #Required
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.db_password }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.testmode_db_password }}
+          {{ if .Values.dbsetup.setupfile.ssl_connection }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.db_sslTrustStorePassword }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStorePassword }}
+          {{ end }}
+          {{ if .Values.ssoSeas.enable }}
+          {{ if .Values.ssoSeas.keystorePassword }}
+          - secretRef:
+              name: {{ .Values.ssoSeas.keystorePassword }}
+          {{ end }}
+          {{ if .Values.ssoSeas.truststorePassword }}
+          - secretRef:
+              name: {{ .Values.ssoSeas.truststorePassword }}
+          {{ end }}
+          {{ end }}
+{{ end }}
+{{ end }}

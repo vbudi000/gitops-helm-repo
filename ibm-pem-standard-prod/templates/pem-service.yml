@@ -1,0 +1,16 @@
+{{ if .Values.license }}
+{{ if .Values.pem.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pem-service
+  labels: {{- include "pem-pod.labels" . | nindent 5 }}
+spec:
+  selector: {{- include "pem.selectorLabels" . | nindent 5 }}
+  ports:
+    - protocol: TCP
+      name: pem-port
+      port: 80
+      targetPort: 9443
+{{- end }}
+{{ end }}

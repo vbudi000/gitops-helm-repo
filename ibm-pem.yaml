@@ -1,0 +1,2390 @@
+---
+# Source: ibm-pem-standard-prod/templates/network-policy.yml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: "ibm-pem.network-policy"
+spec:
+  podSelector:
+    matchLabels:
+      tier: ibm-pem-backend
+  ingress:
+  - from: []
+  policyTypes:
+  - Ingress
+---
+# Source: ibm-pem-standard-prod/templates/gatewayconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-gateway-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-api-app
+     app.kubernetes.io/instance: ibm-pem-api
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options=""
+    servers.keystore_password="$GATEWAY_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias=""
+    servers.keystore_filename=""
+    servers.max_file_size="100"
+    servers.max_files="20"
+    servers.console_log_level="INFO"
+    servers.trace_specification="*: info"
+
+    apigateway.domainName=
+    apigateway.pem_servers=
+    apigateway.pr_servers=
+    apgateway.max_file_size=
+    apigateway.max_request_size=
+    apigateway.hostname_validation_required="true"
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/pemconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-pem-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pem-app
+     app.kubernetes.io/instance: ibm-pem-pem
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options=""
+    servers.keystore_password="$PEM_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias=""
+    servers.keystore_filename=""
+    servers.max_file_size="100"
+    servers.max_files="20"
+    servers.console_log_level="INFO"
+    servers.trace_specification="*: info"
+
+    
+    apigateway.domainName=
+    apigateway.pem_servers=
+    apigateway.pr_servers=
+    
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/ppconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-pp-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pp-app
+     app.kubernetes.io/instance: ibm-pem-pp
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options=""
+    servers.keystore_password="$PP_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias=""
+    servers.keystore_filename=""
+    servers.max_file_size="100"
+    servers.max_files="20"
+    servers.console_log_level="INFO"
+    servers.trace_specification="*: info"
+
+    ##pp properties
+
+    servers.enable_jms_features="embdServerAndClientOnly"
+    servers.provisioner_request_queue="PEM_request"
+    servers.provisioner_response_queue="PEM_response"
+    servers.remote_server_ssl="false"
+    servers.remote_server_host=""
+    servers.remote_server_port="80"
+     servers.channel=
+     servers.connection_name_list=
+     servers.queue_manager=
+     servers.username=
+     servers.password="$WMQ_SERVERS_PASSWORD"
+     servers.wmq_provisioner_request_queue_manager=
+     servers.wmq_provisioner_response_queue_manager=
+     servers.wmq_provisioner_request_queue_name=
+     servers.wmq_provisioner_response_queue_name=
+     servers.ssl_cipher_suite=
+     
+
+    
+    apigateway.domainName=
+    apigateway.pem_servers=
+    apigateway.pr_servers=
+    
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/prconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-pr-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pr-app
+     app.kubernetes.io/instance: ibm-pem-pr
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options=""
+    servers.keystore_password="$PR_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias=""
+    servers.keystore_filename=""
+    servers.max_file_size="100"
+    servers.max_files="20"
+    servers.console_log_level="INFO"
+    servers.trace_specification="*: info"
+
+    ##pr properties
+
+    servers.enable_jms_features="embdClientOnly"
+    servers.provisioner_request_queue="PEM_request"
+    servers.provisioner_response_queue="PEM_response"
+    servers.remote_server_ssl="false"
+    servers.remote_server_host=""
+    servers.remote_server_port="80"
+     servers.channel=
+     servers.connection_name_list=
+     servers.queue_manager=
+     servers.username=
+     servers.password="$WMQ_SERVERS_PASSWORD"
+     servers.wmq_provisioner_request_queue_manager=
+     servers.wmq_provisioner_response_queue_manager=
+     servers.wmq_provisioner_request_queue_name=
+     servers.wmq_provisioner_response_queue_name=
+     servers.ssl_cipher_suite=
+     
+
+    
+    apigateway.domainName=
+    apigateway.pem_servers=
+    apigateway.pr_servers=
+    
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/prodpcmconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-prodpcm-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-prodpcm-app
+     app.kubernetes.io/instance: ibm-pem-prodpcm
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+data:
+  application.yml: |-
+
+    accept-licence: true
+    cm:
+      color: black
+      cmks: ${APPLICATION_PASSPHRASE}
+    server:
+      port:
+      ssl:
+        enabled: false
+        key-store: /opt/IBM/config/keystore.p12
+        key-store-password: ${SERVER_KEYSTORE_PASSWORD}
+        key-store-type: PKCS12
+      serverHeader: IBM Partner Engagement Manager Community Manager
+      compression:
+        enabled: true
+        min-response-size: 1024
+      ajp:
+        enabled: false
+        port: 8585
+    spring:
+      liquibase:
+        enabled: true
+        liquibase-tablespace: 
+      datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+        url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=DB_Host)(PORT=2484))(CONNECT_DATA=(SID=ORCL)))
+        username: Username
+        driver-class-name: oracle.jdbc.driver.OracleDriver
+        hikari:
+          connection-timeout: 60000
+          maximum-pool-size: 40
+          auto-commit: false
+        ssl:
+          enabled: false
+          trust-store: /opt/IBM/config/
+          trust-store-type: PKCS12
+          trust-store-cmks: ${DB_TRUSTSTORE_PASSWORD}
+      jpa:
+        show_sql: true
+        open-in-view: false
+        database-platform: com.pe.pcm.config.database.dialect.Oracle12cExtendedDialect
+        properties:
+          id:
+            new_generator_mappings: true
+        hibernate:
+          naming:
+            physical-strategy: com.pe.pcm.config.database.PhysicalNamingStrategy
+      mail:
+        host: smtp.hostname.com
+        port: 587
+        username: UserName@company.com
+        cmks: ${SMTP_PASSWORD}
+        from: from_mailid@company.com
+        app-contact-mail: app_contact_mailid@company.com
+        mail-signature: Community Manager Portal support team.
+        properties:
+          mail:
+            smtp:
+              auth: true
+              starttls:
+                enable: true
+              ssl:
+                trust: "*"
+      thymeleaf:
+        cache: true
+    login:
+      sm:
+        enable: false
+        param-name: SM_USER
+      max-false-attempts: 5
+      reset-false-attempts: 3
+      user-cmks-expire: 30
+    basic:
+      auth:
+        username: pemuser
+        cmks: ${API_PASSWORD}
+    jwt:
+      secretkey: CACE9E5A149ED201C4033C1A1E02C9BE
+      session-expire: 60
+    sterling-b2bi:
+      core-bp:
+        inbound: CM_MailBox_GET_RoutingRule_Inbound
+        outbound: CM_MailBox_GET_RoutingRule_Outbound
+      user:
+        cmks: ${STERLING_SYSTEM_PASSPHRASE}
+        cmks-validation: true
+        cmks-validation-profile: CM_Profile
+      b2bi-api:
+        active: true
+        auth-host:
+          '[SEAS Authentication]': 1
+        api:
+          username: cm_user
+          cmks: ${STERLING_B2BAPI_PASSWORD}
+          baseUrl: 
+        b2bi-sfg-api:
+          active: true
+          community-name: CM_PEMCommunity
+        sfg-api:
+          active: true
+          api:
+            username: cm_user
+            cmks: ${STERLING_SFGAPI_PASSWORD}
+            baseUrl: 
+        as2:
+          active: false
+        cd:
+          net-map-name: prodCD
+          proxy:
+            internal:
+              server-host: 
+              server-port: 1364
+              secure-plus-option: ENABLED
+              ca-cert: CA_cd_0099
+              system-certificate: B2BHttp
+              security-protocol: TLS 1.2
+              cipher-suites: ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
+            external:
+              server-host: 
+              server-port: 1364
+              secure-plus-option: ENABLED
+              ca-cert: CA_cd_0099
+              system-certificate: B2BHttp
+              security-protocol: TLS 1.2
+              cipher-suites: ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
+    ssp:
+      active: true
+      api:
+        username: ssp_user
+        cmks: ${SSP_PASSWORD}
+        baseUrl: 
+    adapters:
+      ftpServerAdapterName: CM_FTPServerAdapter
+      ftpsClientAdapterName: FTP Client Adapter
+      ftpClientAdapterName: CDServrAdapter
+      ftpsServerAdapterName: CM_FTPS_ServerAdapter
+      sftpServerAdapterName: CM_SFTPServerAdapter
+      sftpClientAdapterName: CM_SFTPClientAdapter
+      as2ServerAdapterName: CM_AS2ServerAdapter
+      as2ClientAdapterName: CM_AS2ClientAdapter
+      as2HttpClientAdapter: HTTPClientAdapter
+      cdClientAdapterName: CM_CDClientAdapter
+      httpServerAdapterName: CM_HTTPServerSync
+      httpsServerAdapterName: CM_HTTPSServerSync
+      mqAdapterName: CM_MQAdapter
+      wsServerAdapterName: CM_HTTPSServerSync
+      fsAdapter: CMFileSystem
+      sfgSftpClientAdapterName: CM_SFTPClientAdapter
+      sfgSftpServerAdapterName: CM_SFTPServerAdapter
+      sfgFtpClientAdapterName: CM_FTPClientAdapter
+      sfgFtpServerAdapterName: CM_FTPServerAdapter
+      sfgFtpsClientAdapterName: CM_FTPSClientAdapter
+      sfgFtpsServerAdapterName: CM_FTPS_ServerAdapter
+    alerts:
+      email:
+        enable:
+          create: false
+          update: false
+          delete: false
+          reports: false
+    workFlow:
+      duplicate:
+        mft: true
+        docHandling: true
+    file-transfer:
+      search:
+        time-range: 30
+    saml:
+      jwt:
+        secret-key: yeWAgVDfb$!MFn@MCJVN7uqkznHbDLR#
+        session-expire: 60
+      idp:
+        metadata: 
+        entity-id: PcmEntityIdp
+      scheme: https
+      host: 
+      url:
+        client: 
+        entity: 
+      ssl:
+        key-store: /opt/IBM/config/
+        key-cmks: ${SAML_KEY_PASSWORD}
+        store-cmks: ${SAML_KEYSTORE_PASSWORD}
+        key-alias: 
+    pem:
+      remote:
+        server:
+          pem-key: /opt/IBM/PCM/
+          base-directory:
+            path: 
+          session-timeout: 5000
+      datasource:
+        url: jdbc:oracle:thin:@DBHostname:1521/DBName
+        username: USERNAME
+        cmks: ${PEM_DB_PASSWORD}
+        driver-class-name: oracle.jdbc.driver.OracleDriver
+      api-ws:
+        active: true
+        base-url: 
+        username: PEMUsername
+        cmks: ${PEM_API_PASSWORD}
+    file:
+      archive:
+        scheduler:
+          cron: "0 0 0 ? * * *"
+          delete-files-job:
+            active: false
+            script-file-loc: /usr/CMArchiveDelete.sh
+        pgp:
+          private-key: /opt/IBM/config/
+          cmks: ${PGP_PASSPHRASE}
+        aes:
+          secret-key: 3p+KB8sEYgX7R6Jh0MJRSQ==
+          salt: 9XboGbY6CkAqYi6WB2tTiQ==
+    sso-ssp-seas:
+      ssp:
+        logout-endpoint: /Signon/logout.html
+        user-header-name: SM_USER
+        token-cookie-name: SSOTOKEN
+      seas:
+        auth-profile: communityManager
+        host: SEAS_Host
+        port: SEAS_Port
+        ssl:
+          enabled: false
+          protocol: 
+          cipher-suits: 
+          trust-store:
+            name: /opt/IBM/config/keystore.p12
+            cmks: ${SEAS_TRUSTSTORE_PASSWORD}
+            alias: seasssl_sso
+            type: PKCS12
+          key-store:
+            name: /opt/IBM/config/keystore.p12
+            cmks: ${SEAS_KEYSTORE_PASSWORD}
+            alias: community_manager
+            type: PKCS12
+      user-request:
+        user:
+          email: email
+          role: role
+          first-name: firstName
+          last-name: lastName
+          phone: phone
+          external-id: externalId
+          preferred-language: prefferedLanguage
+        user-roles:
+          super_admin: superAdmin
+          admin: admin
+          on_boarder: creator
+          business_admin: bAdmin
+          business_user: bUser
+          data_processor: processor
+          data_processor_restricted: processorRes
+---
+# Source: ibm-pem-standard-prod/templates/gateway-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-gateway-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-api-app
+     app.kubernetes.io/instance: ibm-pem-api
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+         app.kubernetes.io/name: ibm-pem-api-app
+         app.kubernetes.io/instance: ibm-pem-api
+  ports:
+    - protocol: TCP
+      name: gateway-port
+      port: 80
+      targetPort: 9443
+---
+# Source: ibm-pem-standard-prod/templates/nonprod-pcm-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-nonprodpcm-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-nonprodpcm-app
+     app.kubernetes.io/instance: ibm-pem-nonprodpcm
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+     app.kubernetes.io/name: ibm-pem-nonprodpcm-app
+     app.kubernetes.io/instance: ibm-pem-nonprodpcm
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9080
+---
+# Source: ibm-pem-standard-prod/templates/pem-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-pem-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pem-app
+     app.kubernetes.io/instance: ibm-pem-pem
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+     app.kubernetes.io/name: ibm-pem-pem-app
+     app.kubernetes.io/instance: ibm-pem-pem
+  ports:
+    - protocol: TCP
+      name: pem-port
+      port: 80
+      targetPort: 9443
+---
+# Source: ibm-pem-standard-prod/templates/pp-jms-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-pp-jms-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pp-app
+     app.kubernetes.io/instance: ibm-pem-pp
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+       app.kubernetes.io/name: ibm-pem-pp-app
+       app.kubernetes.io/instance: ibm-pem-pp
+  ports:
+    - protocol: TCP
+      port: 80
+      
+      targetPort: 7276
+---
+# Source: ibm-pem-standard-prod/templates/pp-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-pp-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pp-app
+     app.kubernetes.io/instance: ibm-pem-pp
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+       app.kubernetes.io/name: ibm-pem-pp-app
+       app.kubernetes.io/instance: ibm-pem-pp
+  ports:
+    - protocol: TCP
+      name: pp-port
+      port: 80
+      targetPort: 9443
+---
+# Source: ibm-pem-standard-prod/templates/pr-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-pr-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pr-app
+     app.kubernetes.io/instance: ibm-pem-pr
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+       app.kubernetes.io/name: ibm-pem-pr-app
+       app.kubernetes.io/instance: ibm-pem-pr
+  ports:
+    - protocol: TCP
+      name: pr-port
+      port: 80
+      targetPort: 9443
+---
+# Source: ibm-pem-standard-prod/templates/prod-pcm-service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ibm-pem-prodpcm-service
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-prodpcm-app
+     app.kubernetes.io/instance: ibm-pem-prodpcm
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+       app.kubernetes.io/name: ibm-pem-prodpcm-app
+       app.kubernetes.io/instance: ibm-pem-prodpcm
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9080
+---
+# Source: ibm-pem-standard-prod/templates/api-deployment.yml
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: ibm-pem-api-deployment
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-api-app
+     app.kubernetes.io/instance: ibm-pem-api
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       app.kubernetes.io/name: ibm-pem-api-app
+       app.kubernetes.io/instance: ibm-pem-api
+  template:
+    metadata:
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-api-app
+         app.kubernetes.io/instance: ibm-pem-api
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+        checksum/config: 0b41c0ea6006c24277b746a6ec34ed1dc20bcaa281c31bbc7a5444bda61c77d3
+    spec:
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-gateway-setupfile
+        configMap:
+            name: ibm-pem-gateway-setupfile
+        #volumes for Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+        #volumes for logs
+      
+        #localtime (timezone for pods)
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+      #keystores for ssoSeas
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+        - name: ibm-pem-api
+          image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+          imagePullPolicy: IfNotPresent
+          resources:
+              limits:
+                cpu: 2000m
+                ephemeral-storage: 4Gi
+                memory: 4Gi
+              requests:
+                cpu: 1000m
+                ephemeral-storage: 2Gi
+                memory: 2Gi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            #volumes for logs
+          
+            #volumes for db driver jar
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: dbdrivers
+            readOnly: true
+          
+            #Setup.cfg file
+          - name: ibm-pem-gateway-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+          #mounting resources to lib directory for sso
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/resources/lib/
+            subPath: sso
+            readOnly: true
+          
+          #mounting resources to lib directory for wmq
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/wmq/
+            subPath: wmq
+            readOnly: true
+          
+            #localtime (timezone for pod)
+          - name: ibm-pem-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore file for APPLICATION
+          - name: ibm-pem-app-keystore
+            mountPath: /opt/IBM/Resources/resources/security/
+            subPath: 
+            #keystore files for db
+          
+          #keystore and trust_store for sso
+          
+            #passphrase file
+          - name: ibm-pem-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 10
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+          env:
+          - name: application
+            value: apigateway
+          envFrom:
+          #Optional
+          
+          #wmq
+          
+          #Required
+          - secretRef:
+              name: ibm-pem-secret
+          - secretRef:
+              name: ibm-pem-secret
+          
+          #Required
+          - secretRef:
+              name:
+---
+# Source: ibm-pem-standard-prod/templates/pem-deployment.yml
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: ibm-pem-pem-deployment
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pem-app
+     app.kubernetes.io/instance: ibm-pem-pem
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       app.kubernetes.io/name: ibm-pem-pem-app
+       app.kubernetes.io/instance: ibm-pem-pem
+  template:
+    metadata:
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-pem-app
+         app.kubernetes.io/instance: ibm-pem-pem
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        checksum/config: f584c807dd45ca9fe0538675ee6c667f3918766ff6441e7989eb0b1ce5a0f13b
+    spec:
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-pem-setupfile
+        configMap:
+            name: ibm-pem-pem-setupfile
+        #volumes for Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+        #volumes for logs
+      
+        #localtime (timezone for pods)
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+      #keystores for ssoSeas
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+        - name: ibm-pem-pem
+          image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources:
+              limits:
+                cpu: 2000m
+                ephemeral-storage: 4Gi
+                memory: 8Gi
+              requests:
+                cpu: 1000m
+                ephemeral-storage: 2Gi
+                memory: 4Gi
+          volumeMounts:
+            #volumes for logs
+          
+            #volumes for db driver jar
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: dbdrivers
+            readOnly: true
+          
+          #mounting resources to lib directory for sso
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/resources/lib/
+            subPath: sso
+            readOnly: true
+          
+          #mounting resources to lib directory for wmq
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/wmq/
+            subPath: wmq
+            readOnly: true
+          
+            #Setup.cfg file
+          - name: ibm-pem-pem-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+            #localtime (timezone for pod)
+          - name: ibm-pem-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore file for APPLICATION
+          - name: ibm-pem-app-keystore
+            mountPath: /opt/IBM/Resources/resources/security/
+            subPath: 
+            #keystore files for db
+          
+          #keystore and trust_store for sso
+          
+            #passphrase file
+          - name: ibm-pem-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 10
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+          env:
+          - name: application
+            value: pem
+          envFrom:
+          #Optional
+          
+          #wmq
+          
+          #Required
+          - secretRef:
+              name: ibm-pem-secret
+          - secretRef:
+              name: ibm-pem-secret
+          #optional
+          
+          #Required
+          - secretRef:
+              name: 
+          #Optional
+---
+# Source: ibm-pem-standard-prod/templates/pp-deployment.yml
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: ibm-pem-pp-deployment
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pp-app
+     app.kubernetes.io/instance: ibm-pem-pp
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       app.kubernetes.io/name: ibm-pem-pp-app
+       app.kubernetes.io/instance: ibm-pem-pp
+  template:
+    metadata:
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-pp-app
+         app.kubernetes.io/instance: ibm-pem-pp
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+        checksum/config: 39ab1b825a772afeab40d0ba5e857a89e68874fedfbd99715df46d348893a0b4
+    spec:
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-pp-setupfile
+        configMap:
+            name: ibm-pem-pp-setupfile
+        #volumes for Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+        #volumes for logs
+      
+        #localtime (timezone for pods)
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+      #keystores for ssoSeas
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+        - name: ibm-pem-pp
+          image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources:
+             limits:
+               cpu: 2000m
+               ephemeral-storage: 4Gi
+               memory: 4Gi
+             requests:
+               cpu: 1000m
+               ephemeral-storage: 2Gi
+               memory: 2Gi
+          volumeMounts:
+            #volumes for logs
+          
+            #volumes for db driver jar
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: dbdrivers
+            readOnly: true
+          
+            #Setup.cfg file
+          - name: ibm-pem-pp-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+          #mounting resources to lib directory for sso
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/resources/lib/
+            subPath: sso
+            readOnly: true
+          
+          #mounting resources to lib directory for wmq
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/wmq/
+            subPath: wmq
+            readOnly: true
+          
+            #localtime (timezone for pod)
+          - name: ibm-pem-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore file for APPLICATION
+          - name: ibm-pem-app-keystore
+            mountPath: /opt/IBM/Resources/resources/security/
+            subPath: 
+            #keystore files for db
+          
+          #keystore and trust_store for sso
+          
+            #passphrase file
+          - name: ibm-pem-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 10
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+          env:
+          - name: application
+            value: pp
+          envFrom:
+          #Optional
+          
+          #Required
+          - secretRef:
+              name: ibm-pem-secret
+          - secretRef:
+              name: ibm-pem-secret
+          #optional
+          
+          #Required
+          - secretRef:
+              name: 
+          #wmq
+---
+# Source: ibm-pem-standard-prod/templates/pr-deployment.yml
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: ibm-pem-pr-deployment
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pr-app
+     app.kubernetes.io/instance: ibm-pem-pr
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       app.kubernetes.io/name: ibm-pem-pr-app
+       app.kubernetes.io/instance: ibm-pem-pr
+  template:
+    metadata:
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-pr-app
+         app.kubernetes.io/instance: ibm-pem-pr
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+        checksum/config: 0e71abd74974936d5c7d499620cec27356410753e13634a27ec5a9f62fad963c
+    spec:
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-pr-setupfile
+        configMap:
+            name: ibm-pem-pr-setupfile
+        #volumes for Resources common for all pods
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+        #volumes for logs common for all pods
+      
+        #localtime (timezone for pods) common for all pods
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+      #keystores for ssoSeas
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+        - name: ibm-pem-pr
+          image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+          imagePullPolicy: IfNotPresent
+          resources:
+              limits:
+                cpu: 2000m
+                ephemeral-storage: 4Gi
+                memory: 4Gi
+              requests:
+                cpu: 1000m
+                ephemeral-storage: 2Gi
+                memory: 2Gi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            #volumes for logs
+          
+            #volumes for db driver jar
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: dbdrivers
+            readOnly: true
+          
+            #Setup.cfg file
+          - name: ibm-pem-pr-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+          #mounting resources to lib directory for sso
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/resources/lib/
+            subPath: sso
+            readOnly: true
+          
+          #mounting resources to lib directory for wmq
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/Resources/wmq/
+            subPath: wmq
+            readOnly: true
+          
+            #localtime (timezone for pod) common for all pods
+          - name: ibm-pem-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore file for APPLICATION
+          - name: ibm-pem-app-keystore
+            mountPath: /opt/IBM/Resources/resources/security/
+            subPath: 
+            #keystore files for db
+          
+          #keystore and trust_store for sso
+          
+            #passphrase file
+          - name: ibm-pem-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 10
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+          env:
+          - name: application
+            value: pr
+          envFrom:
+          #Optional
+          
+          #Required
+          - secretRef:
+              name: ibm-pem-secret
+          - secretRef:
+              name: ibm-pem-secret
+          
+          #Required
+          - secretRef:
+              name: 
+          #wmq
+---
+# Source: ibm-pem-standard-prod/templates/prod-pcm-deployment.yml
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: ibm-pem-pcm-prod
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-prodpcm-app
+     app.kubernetes.io/instance: ibm-pem-prodpcm
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       app.kubernetes.io/name: ibm-pem-prodpcm-app
+       app.kubernetes.io/instance: ibm-pem-prodpcm
+  template:
+    metadata:
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-prodpcm-app
+         app.kubernetes.io/instance: ibm-pem-prodpcm
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+        checksum/config: bc59799bc22fd795c50ac6de2225acfe0313b9b58ee98cd68da811e70eb504ee
+    spec:
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+      #jars Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+          claimName: ibm-pem-resources-pvc
+      
+      #setupfile
+      - name: ibm-pem-setupfile
+        configMap:
+            name: ibm-pem-prodpcm-setupfile
+      #archive
+      
+      #logs
+      
+      #app keystore
+      
+      #DB keystore
+      
+      #PEM key for scripts
+      
+      #PGP key
+      
+      #Seas truststore
+      
+      #Seas keystore
+      
+      imagePullSecrets:
+        - name: 
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+        - name:  ibm-pem-prod-pcm
+          image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+          imagePullPolicy: 
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources:
+             limits:
+               cpu: 2000m
+               ephemeral-storage: 3Gi
+               memory: 4Gi
+             requests:
+               cpu: 1000m
+               ephemeral-storage: 2Gi
+               memory: 2Gi
+          volumeMounts:
+            #jars
+          
+          - name: ibm-pem-resources
+            mountPath: /opt/IBM/PCM/jars
+            subPath: pcm
+          
+          #setup[file
+          - name: ibm-pem-setupfile
+            mountPath: /opt/IBM/config/application.yml
+            subPath: application.yml
+            #archive location
+          
+          #logs
+          
+          #app keystore
+          
+          #db keystore
+          
+          #pem key
+          
+          #PGP key
+          
+          #Seas truststore
+          
+          #Seas keystore
+          
+          readinessProbe:
+            tcpSocket:
+              port: 9080
+            initialDelaySeconds: 10
+            periodSeconds: 60
+          livenessProbe:
+            tcpSocket:
+              port: 9080
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+          ports:
+            - containerPort: 9080
+              protocol: "TCP"
+          env:
+            - name: NODE_IP
+              value: localhost
+            - name: NODE_PORT
+              value: "9080"
+            
+            - name: APP
+              value: ocp-cm
+            
+            
+            - name: CONSOLE_LOGGING
+              value: "true"
+            
+            - name: LOGGER_LEVEL
+              value: INFO
+          envFrom:
+          - secretRef:
+              name: 
+          
+          
+          
+          
+          
+          - secretRef:
+              name: Mailpassword
+          
+          
+          
+          
+          
+          - secretRef:
+              name: password
+          
+          
+          - secretRef:
+              name: SSP_Password
+          
+          
+          
+          
+          
+          - secretRef:
+              name: PEMPassword
+---
+# Source: ibm-pem-standard-prod/templates/gateway-route.yml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ibm-pem-gateway-route
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-api-app
+     app.kubernetes.io/instance: ibm-pem-api
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+  annotations:
+    "haproxy.router.openshift.io/set-forwarded-headers": "never"
+spec:
+  
+  to:
+    kind: Service
+    name: ibm-pem-gateway-service
+  port:
+    targetPort: gateway-port
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: None
+---
+# Source: ibm-pem-standard-prod/templates/pem-route.yml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ibm-pem-pem-route
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pem-app
+     app.kubernetes.io/instance: ibm-pem-pem
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  
+  to:
+    kind: Service
+    name: ibm-pem-pem-service
+  port:
+    targetPort: pem-port
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: None
+---
+# Source: ibm-pem-standard-prod/templates/pp-route.yml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ibm-pem-pp-route
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pp-app
+     app.kubernetes.io/instance: ibm-pem-pp
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  
+  to:
+    kind: Service
+    name: ibm-pem-pp-service
+  port:
+    targetPort: pp-port
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: None
+---
+# Source: ibm-pem-standard-prod/templates/pr-route.yml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ibm-pem-pr-route
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-pr-app
+     app.kubernetes.io/instance: ibm-pem-pr
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  
+  to:
+    kind: Service
+    name: ibm-pem-pr-service
+  port:
+    targetPort: pr-port
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: None
+---
+# Source: ibm-pem-standard-prod/templates/prodpcm-route.yml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ibm-pem-prodpcm-route
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-prodpcm-app
+     app.kubernetes.io/instance: ibm-pem-prodpcm
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  
+  to:
+    kind: Service
+    name: ibm-pem-prodpcm-service
+  port:
+    targetPort: 9080
+---
+# Source: ibm-pem-standard-prod/templates/dbutilsconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-dbutils-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-dbutils-app
+     app.kubernetes.io/instance: ibm-pem-dbutils
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-7"
+    "helm.sh/resource-policy": keep
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+data:
+  Setup.cfg: |-
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/migratorconfigmap.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ibm-pem-migrator-setupfile
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-migrator-app
+     app.kubernetes.io/instance: ibm-pem-migrator
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-8"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+data:
+  Setup.cfg: |-
+     accept_license="true"
+         proxy_host=""
+         proxy_port=""
+         proxy_user_name=""
+         proxy_password="$PROXY_PASSWORD"
+         proxy_protocol=""
+         customer_id="vbudi@us.ibm.com"
+         db_type="DB2"
+         ssl_connection="false"
+         db_port="50000"
+         db_host="db2-lb.pem.svc"
+         db_name="pemdb"
+         db_schema="db2inst1"
+         db_user="db2inst1"
+         db_password="$DB_PASSWORD"
+         db_driver="com.ibm.db2.jcc.DB2Driver"
+         db_max_pool_size="500"
+         db_min_pool_size="5"
+         db_aged_timeout="1440m"
+         db_max_idle_time="1440m"
+         db_sslTrustStoreName=""
+         db_sslTrustStorePassword="$DB_SSLTRUSTSTORE_PASSWORD"
+         db_mssql_hostNameInCertificate=""
+         db_mssql_sslProtocol=""
+         testmode_db_port="50000"
+         testmode_db_host="db2_lb.pem.svc"
+         testmode_db_name="pemdb"
+         testmode_db_schema="db2inst1"
+         testmode_db_user="db2inst1"
+         testmode_db_password="$TESTMODE_DB_PASSWORD"
+         testmode_db_driver="com.ibm.db2.jcc.DB2Driver"
+         testmode_db_max_pool_size=""
+         testmode_db_min_pool_size=""
+         testmode_db_aged_timeout=""
+         testmode_db_max_idle_time=""
+         testmode_db_sslTrustStoreName=""
+         testmode_db_sslTrustStorePassword="$TESTDB_SSLTRUSTSTORE_PASSWORD"
+         testmode_db_mssql_hostNameInCertificate=""
+         testmode_db_mssql_sslProtocol=""
+         migrator.default_sponsor="true"
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     ssomigration.migration_action=
+     ssomigration.sponsor_context=
+     ssomigration.org_data_filename=
+     ssomigration.user_data_filename=""
+     servers.seas_truststore_name=
+         servers.seas_truststore_password="$SSO_TRUSTSTOREPASSWORD"
+         servers.seas_truststore_alias=
+         servers.seas_truststore_type=
+         servers.seas_keystore_name=
+         servers.seas_keystore_password="$SSO_KEYSTOREPASSWORD"
+         servers.seas_keystore_type=
+         servers.seas_keystore_alias=
+     servers.ssl_protocol=""
+     servers.enabled_ciphers=""
+         
+     servers.logs_logger="console"
+---
+# Source: ibm-pem-standard-prod/templates/resource-pvc.yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ibm-pem-resources-pvc
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-6"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: ocs-storagecluster-cephfs
+---
+# Source: ibm-pem-standard-prod/templates/tests/test-config.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "ibm-pem-test-config"
+  annotations:
+    "helm.sh/hook": test-success
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-test-app
+     app.kubernetes.io/instance: ibm-pem-test
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+spec:
+  serviceAccountName: pem
+  imagePullSecrets:
+  - name: ibm-entitlement-key
+  hostNetwork: false
+  hostPID: false
+  hostIPC: false
+  securityContext:
+    runAsUser: 1011
+    runAsNonRoot: true
+    supplementalGroups:
+      - 555
+    fsGroup: 1011
+  volumes:
+    #Setup.cfg file for APPLICATION
+  - name: ibm-pem-pem-setupfile
+    configMap:
+        name: ibm-pem-pem-setupfile
+  containers:
+  - name: "test-url"
+    resources:
+      requests:
+        ephemeral-storage: 2Mi
+        memory: "1Gi"
+        cpu: "250m"
+      limits:
+        ephemeral-storage: 6Mi
+        memory: "2Gi"
+        cpu: "500m"
+    image: "cp.icr.io/cp/opencontent-common-utils:1.1.11"
+    imagePullPolicy: "IfNotPresent"
+    command: ["/bin/sh", "-c", "echo 'Check configuration file available in Persistent Volume' | [ -f /opt/IBM/Resources/Setup.cfg ] && echo 'configuration file available'"]
+    volumeMounts:
+      #Setup.cfg file
+    - name: ibm-pem-pem-setupfile
+      mountPath: /opt/IBM/Resources/Setup.cfg
+      subPath: Setup.cfg
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      privileged: false
+      runAsUser: 1011
+      readOnlyRootFilesystem: false
+      allowPrivilegeEscalation: false
+  restartPolicy: Never
+  affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+---
+# Source: ibm-pem-standard-prod/templates/dbutils-job.yml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "ibm-pem.dbutils"
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-dbutils-app
+     app.kubernetes.io/instance: ibm-pem-dbutils
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: "ibm-pem-dbutils"
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-dbutils-app
+         app.kubernetes.io/instance: ibm-pem-dbutils
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-dbutils-setupfile
+        configMap:
+            name: ibm-pem-dbutils-setupfile
+        #volumes for Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+      #logs
+      
+        #localtime (timezone for pods)
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+      - name: ibm-pem-dbutils
+        image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+        imagePullPolicy: IfNotPresent
+        securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+        resources:
+           limits:
+             cpu: 500m
+             ephemeral-storage: 3Gi
+             memory: 4Gi
+           requests:
+             cpu: 250m
+             ephemeral-storage: 2Gi
+             memory: 2Gi
+        volumeMounts:
+          #volumes for logs
+        
+          #volumes for db driver jar
+        
+        - name: ibm-pem-resources
+          mountPath: /opt/IBM/Resources/dbdrivers/
+          subPath: dbdrivers
+          readOnly: true
+        
+          #Setup.cfg file
+        - name: ibm-pem-dbutils-setupfile
+          mountPath: /opt/IBM/Resources/Setup.cfg
+          subPath: Setup.cfg
+          #localtime (timezone for pod)
+        - name: ibm-pem-timezone
+          mountPath: /opt/IBM/localtime
+          subPath: localtime
+          readOnly: true
+          #keystore files for db
+        
+          #passphrase file
+        - name: ibm-pem-passphrase
+          mountPath: /opt/IBM/Resources/passphrase.txt
+          subPath: passphrase.txt
+        env:
+        - name: application
+          value: dbutils
+        envFrom:
+        #Optional
+        
+        - secretRef:
+            name: ibm-pem-secret
+        - secretRef:
+            name: ibm-pem-secret
+        #optional
+---
+# Source: ibm-pem-standard-prod/templates/migrator-job.yml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "ibm-pem.migrator"
+  labels:
+     helm.sh/chart: ibm-pem-standard-prod-1.0.3
+     release: partnerEngagementStandard
+     app.kubernetes.io/name: ibm-pem-migrator-app
+     app.kubernetes.io/instance: ibm-pem-migrator
+     app.kubernetes.io/version: "6.2.0.2"
+     app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: "ibm-pem"
+      labels:
+         helm.sh/chart: ibm-pem-standard-prod-1.0.3
+         release: partnerEngagementStandard
+         app.kubernetes.io/name: ibm-pem-migrator-app
+         app.kubernetes.io/instance: ibm-pem-migrator
+         app.kubernetes.io/version: "6.2.0.2"
+         app.kubernetes.io/managed-by: Helm
+      annotations:
+        productID: "bc822cef973a4e10b5c99146e75f4a9a"
+        productMetric: "RESOURCE_VALUE_UNIT"
+        productName: "IBM Partner Engagement Manager Standard"
+        productVersion: "6.2.0"
+        productChargedContainers: "All"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: pem
+      affinity:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+               - matchExpressions:
+                   - key: kubernetes.io/arch
+                     operator: In
+                     values:
+                       - amd64
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: ibm-pem-migrator-setupfile
+        configMap:
+            name: ibm-pem-migrator-setupfile
+        #volumes for Resources
+      
+      - name: ibm-pem-resources
+        persistentVolumeClaim:
+            claimName: ibm-pem-resources-pvc
+      
+      #logs
+      
+        #localtime (timezone for pods)
+      - name: ibm-pem-timezone
+        configMap:
+            name: pemtz
+        #keystore file for APPLICATION
+      - name: ibm-pem-app-keystore
+        secret:
+           secretName: 
+        #keystore file for DB
+      
+        #PassPhrase
+      - name: ibm-pem-passphrase
+        secret:
+           secretName: ibm-pem-secret
+      imagePullSecrets:
+        - name: ibm-entitlement-key
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: 1011
+        runAsNonRoot: true
+        supplementalGroups:
+          - 555
+        fsGroup: 1011
+      containers:
+      - name: ibm-pem-migrator
+        image: "cp.icr.io/cp/ibm-pem/pem:6.2.0.2"
+        imagePullPolicy: IfNotPresent
+        securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: 1011
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+        resources:
+           limits:
+             cpu: 500m
+             ephemeral-storage: 3Gi
+             memory: 4Gi
+           requests:
+             cpu: 250m
+             ephemeral-storage: 2Gi
+             memory: 2Gi
+        volumeMounts:
+          #volumes for logs
+        
+          #volumes for db driver jar
+        
+        - name: ibm-pem-resources
+          mountPath: /opt/IBM/Resources/dbdrivers/
+          subPath: dbdrivers
+          readOnly: true
+        
+          #Setup.cfg file
+        - name: ibm-pem-migrator-setupfile
+          mountPath: /opt/IBM/Resources/Setup.cfg
+          subPath: Setup.cfg
+          #localtime (timezone for pod)
+        - name: ibm-pem-timezone
+          mountPath: /opt/IBM/localtime
+          subPath: localtime
+          readOnly: true
+          #keystore file for APPLICATION
+        - name: ibm-pem-app-keystore
+          mountPath: /opt/IBM/Resources/resources/security/
+          subPath: 
+          #keystore files for db
+        
+          #passphrase file
+        - name: ibm-pem-passphrase
+          mountPath: /opt/IBM/Resources/passphrase.txt
+          subPath: passphrase.txt
+        env:
+        - name: application
+          value: migrator
+        envFrom:
+        #Optional
+        
+        - secretRef:
+            name: ibm-pem-secret
+        - secretRef:
+            name: ibm-pem-secret
+        #optional

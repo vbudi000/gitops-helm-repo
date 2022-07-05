@@ -1,0 +1,154 @@
+{{ if .Values.license }}
+{{ if .Values.ssomigration.enable }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}.sso.migrator"
+  labels: {{- include "sso-migrator-pod.labels" . | nindent 5 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-2"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels: {{- include "sso-migrator-pod.labels" . | nindent 9 }}
+      annotations:
+        productID: {{- include "ibmpem.metering.productId" . | indent 1 }}
+        productMetric: {{- include "ibmpem.metering.productMetric" . | indent 1 }}
+        productName: {{- include "ibmpem.metering.productName" . | indent 1 }}
+        productVersion: {{- include "ibmpem.metering.productVersion" . | indent 1 }}
+        productChargedContainers: {{- include "ibmpem.metering.productChargedContainers" . | indent 1 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      affinity: {{- include "ibmpem.affinity" . | nindent 9 }}
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: {{ .Release.Name }}-sso-migrator-setupfile
+        configMap:
+            name: {{ .Release.Name }}-migrator-setupfile
+        #volumes for Resources
+      {{ if .Values.volumeClaims.resources.enabled }}
+      - name: {{ .Release.Name }}-resources
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-resources-pvc
+      {{ end }}
+      #logs
+      {{ if .Values.volumeClaims.logs.enabled }}
+      - name: {{ .Release.Name }}-logs
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-logs-pvc
+      {{ end }}
+        #localtime (timezone for pods)
+      - name: {{ .Release.Name }}-timezone
+        configMap:
+            name: {{ .Values.timezone.configmapname}}
+        #keystore file for DB
+      {{ if .Values.dbsetup.setupfile.ssl_connection }}
+      - name: {{ .Release.Name }}-db-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.db_sslTrustStoresecret }}
+        #keystore file for Test DB
+      - name: {{ .Release.Name }}-testdb-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoresecret }}
+      {{ end }}
+        #PassPhrase
+      - name: {{ .Release.Name }}-passphrase
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.passphrasesecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+        runAsNonRoot: true
+        supplementalGroups:
+          {{- range $.Values.security.supplementalGroups }}
+          - {{ . }}
+          {{- end }}
+        fsGroup: {{ .Values.security.fsGroup | default "1011" }}
+      containers:
+      - name: {{ .Release.Name }}-sso-migrator
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+        resources: {{- toYaml .Values.dbsetup.resources | nindent 11 }}
+        volumeMounts:
+          #volumes for logs
+        {{ if .Values.volumeClaims.logs.enabled }}
+        - name: {{ .Release.Name }}-logs
+          mountPath: /opt/IBM/PEM_SSO_Migration_Utility/log
+          subPath: {{ .Values.volumeClaims.logs.subpath.ssoMigrator }}
+        {{ end }}
+          #volumes for db driver jar and sso datafile
+        {{ if .Values.volumeClaims.resources.enabled }}
+        - name: {{ .Release.Name }}-resources
+          mountPath: /opt/IBM/Resources/dbdrivers/
+          subPath: {{ .Values.volumeClaims.resources.subpath.dbdrivers }}
+          readOnly: true
+        - name: {{ .Release.Name }}-resources
+          mountPath: /opt/IBM/PEM_SSO_Migration_Utility/bin/data
+          subPath: {{ .Values.volumeClaims.resources.subpath.ssomigrator }}
+        {{ end }}
+          #Setup.cfg file
+        - name: {{ .Release.Name }}-sso-migrator-setupfile
+          mountPath: /opt/IBM/Resources/Setup.cfg
+          subPath: Setup.cfg
+          #localtime (timezone for pod)
+        - name: {{ .Release.Name }}-timezone
+          mountPath: /opt/IBM/localtime
+          subPath: localtime
+          readOnly: true
+          #keystore files for db
+        {{ if .Values.dbsetup.setupfile.ssl_connection }}
+          #master DB keystore
+        - name: {{ .Release.Name }}-db-keystore
+          mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+          subPath: {{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+          #Test DB keystore
+        - name: {{ .Release.Name }}-testdb-keystore
+          mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+          subPath: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+        {{ end }}
+          #passphrase file
+        - name: {{ .Release.Name }}-passphrase
+          mountPath: /opt/IBM/Resources/passphrase.txt
+          subPath: passphrase.txt
+        env:
+        - name: application
+          value: ssomigration
+        envFrom:
+        - secretRef:
+            name: {{ .Values.dbsetup.setupfile.db_password }}
+        - secretRef:
+            name: {{ .Values.dbsetup.setupfile.testmode_db_password }}
+        #optional
+        {{ if .Values.dbsetup.setupfile.ssl_connection }}
+        - secretRef:
+            name: {{ .Values.dbsetup.setupfile.db_sslTrustStorePassword }}
+        - secretRef:
+            name: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStorePassword }}
+        {{ end }}
+        {{ if .Values.ssoSeas.enable }}
+        - secretRef:
+            name: {{ .Values.ssoSeas.keystorePassword }}
+        - secretRef:
+            name: {{ .Values.ssoSeas.truststorePassword }}
+        {{ end }}
+{{ end }}
+{{ end }}

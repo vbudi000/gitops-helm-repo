@@ -1,0 +1,24 @@
+{{ if .Values.license }}
+{{ if .Values.volumeClaims.logs.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-logs-pvc
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-9"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  accessModes:
+    {{- range $.Values.volumeClaims.logs.accessModes }}
+    - {{ . }}
+    {{- end }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.logs.capacity }}
+  storageClassName: {{ .Values.volumeClaims.logs.storageclass }}
+{{ end }}
+{{ end }}

@@ -1,0 +1,21 @@
+{{ if .Values.license }}
+{{ if .Values.communitymanager.install }}
+{{ if .Values.communitymanager.prod.enable }}
+{{- if .Values.communitymanager.prod.autoscaling.enabled }}
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-prodpcm-hpac
+  labels: {{- include "prodpcm-pod.labels" . | nindent 5 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-pcm-prod
+  minReplicas: {{ .Values.communitymanager.prod.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.communitymanager.prod.autoscaling.maxReplicas }}
+  targetCPUUtilizationPercentage: {{ .Values.communitymanager.prod.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{ end }}

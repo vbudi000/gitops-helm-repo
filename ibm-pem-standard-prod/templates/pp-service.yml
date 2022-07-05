@@ -1,0 +1,16 @@
+{{ if .Values.license }}
+{{ if .Values.pp.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pp-service
+  labels: {{- include "pp-pod.labels" . | nindent 5 }}
+spec:
+  selector: {{- include "pp.selectorLabels" . | nindent 7 }}
+  ports:
+    - protocol: TCP
+      name: pp-port
+      port: 80
+      targetPort: 9443
+{{- end }}
+{{ end }}

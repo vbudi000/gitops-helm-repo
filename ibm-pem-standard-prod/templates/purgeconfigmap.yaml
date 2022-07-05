@@ -1,0 +1,51 @@
+{{ if .Values.license }}
+{{ if .Values.purge.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-purge-setupfile
+  labels: {{- include "purge-pod.labels" . | nindent 5 }}
+data:
+  Setup.cfg: |-
+
+    purge.name="{{ .Values.purge.setupfile.purge.name }}"
+    purge.number_of_purge_days="{{ .Values.purge.setupfile.purge.number_of_purge_days }}"
+    purge.purge_count="{{ .Values.purge.setupfile.purge.purge_count }}"
+
+    purge.sponsor_context="{{ .Values.purge.setupfile.purge.sponsor_context }}"
+
+    purge.no_of_db_connections="{{ .Values.purge.setupfile.purge.no_of_db_connections }}"
+    purge.resource_to_purge="{{ .Values.purge.setupfile.purge.resource_to_purge }}"
+    purge.resource_to_purge_key="{{ .Values.purge.setupfile.purge.resource_to_purge_key }}"
+    purge.purge_strategy="{{ .Values.purge.setupfile.purge.purge_strategy }}"
+    purge.purge_strategy_data_scope="{{ .Values.purge.setupfile.purge.purge_strategy_data_scope }}"
+    purge.target_db_is_same_as_source_db="{{ .Values.purge.setupfile.purge.target_db_is_same_as_source_db }}"
+    purge.target_no_of_db_connections="{{ .Values.purge.setupfile.purge.target_no_of_db_connections }}"
+
+    purge.target_db_port={{ .Values.purge.setupfile.purge.target_db_port }}
+    purge.target_db_host={{ .Values.purge.setupfile.purge.target_db_host }}
+    purge.target_db_name={{ .Values.purge.setupfile.purge.target_db_name }}
+    purge.target_db_schema={{ .Values.purge.setupfile.purge.target_db_schema }}
+    purge.target_db_user={{ .Values.purge.setupfile.purge.target_db_user }}
+    purge.target_db_password=$PURGE_TARGET_DB_PASSWORD
+    purge.target_db_driver={{ .Values.purge.setupfile.purge.target_db_driver }}
+
+    purge.target_ssl_connection={{ .Values.purge.setupfile.purge.target_ssl_connection }}
+    purge.target_db_sslTrustStoreName={{ .Values.purge.setupfile.purge.target_db_sslTrustStoreName }}
+    purge.target_db_sslTrustStorePassword=$PURGE_TARGET_DB_TRUSTSTORE_PASSWORD
+    purge.target_db_mssql_hostNameInCertificate={{ .Values.purge.setupfile.purge.target_db_mssql_hostNameInCertificate }}
+    purge.target_db_mssql_sslProtocol={{ .Values.purge.setupfile.purge.target_db_mssql_sslProtocol }}
+
+    purge.target_db_type="{{ .Values.purge.setupfile.purge.target_db_type }}"
+    purge.target_ssl_connection="{{ .Values.purge.setupfile.purge.target_ssl_connection }}"
+    purge.target_no_of_db_connections="{{ .Values.purge.setupfile.purge.target_no_of_db_connections }}"
+    purge.jvm_options="{{ .Values.purge.setupfile.purge.jvm_options }}"
+    purge.java_util_logging_file_handler_level="{{ .Values.purge.setupfile.purge.java_util_logging_file_handler_level }}"
+    purge.java_util_logging_file_handler_limit="{{ .Values.purge.setupfile.purge.java_util_logging_file_handler_limit }}"
+    purge.java_util_logging_file_handler_count="{{ .Values.purge.setupfile.purge.java_util_logging_file_handler_count }}"
+
+    {{- include "ibmpemstandard.dbsetup" . | nindent 5 }}
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.serversetup" . | nindent 5 }}
+{{ end }}
+{{ end }}

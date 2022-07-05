@@ -1,0 +1,228 @@
+{{ if .Values.license }}
+{{ if .Values.pp.enable }}
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: {{ .Release.Name }}-pp-deployment
+  labels: {{- include "pp-pod.labels" . | nindent 5 }}
+spec:
+  replicas: {{ .Values.pp.replicas }}
+  selector:
+    matchLabels: {{- include "pp.selectorLabels" . | nindent 7 }}
+  template:
+    metadata:
+      labels: {{- include "pp-pod.labels" . | nindent 9 }}
+      annotations:
+        productID: {{- include "ibmpem.metering.productId" . | indent 1 }}
+        productMetric: {{- include "ibmpem.metering.productMetric" . | indent 1 }}
+        productName: {{- include "ibmpem.metering.productName" . | indent 1 }}
+        productVersion: {{- include "ibmpem.metering.productVersion" . | indent 1 }}
+        productChargedContainers: {{- include "ibmpem.metering.productChargedContainers" . | indent 1 }}
+        checksum/config: {{ include (print $.Template.BasePath "/ppconfigmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      affinity: {{- include "ibmpem.affinity" . | nindent 9 }}
+      volumes:
+        #Setup.cfg file for APPLICATION
+      - name: {{ .Release.Name }}-pp-setupfile
+        configMap:
+            name: {{ .Release.Name }}-pp-setupfile
+        #volumes for Resources
+      {{ if .Values.volumeClaims.resources.enabled }}
+      - name: {{ .Release.Name }}-resources
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-resources-pvc
+      {{ end }}
+        #volumes for logs
+      {{ if .Values.volumeClaims.logs.enabled }}
+      - name: {{ .Release.Name }}-logs
+        persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-logs-pvc
+      {{ end }}
+        #localtime (timezone for pods)
+      - name: {{ .Release.Name }}-timezone
+        configMap:
+            name: {{ .Values.timezone.configmapname}}
+        #keystore file for APPLICATION
+      - name: {{ .Release.Name }}-app-keystore
+        secret:
+           secretName: {{ .Values.pp.setupfile.servers.keystore_filename }}
+        #keystore file for DB
+      {{ if .Values.dbsetup.setupfile.ssl_connection }}
+      - name: {{ .Release.Name }}-db-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.db_sslTrustStoresecret }}
+        #keystore file for Test DB
+      - name: {{ .Release.Name }}-testdb-keystore
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoresecret }}
+      {{ end }}
+      #keystores for ssoSeas
+      {{ if .Values.ssoSeas.enable }}
+      {{ if .Values.ssoSeas.truststoreSecret }}
+      - name: {{ .Release.Name }}-sso-truststore
+        secret:
+           secretName: {{ .Values.ssoSeas.truststoreSecret }}
+      {{ end }}
+      {{ if .Values.ssoSeas.keystoreSecret }}
+      - name: {{ .Release.Name }}-sso-keystore
+        secret:
+           secretName: {{ .Values.ssoSeas.keystoreSecret }}
+      {{ end }}
+      {{ end }}
+        #PassPhrase
+      - name: {{ .Release.Name }}-passphrase
+        secret:
+           secretName: {{ .Values.dbsetup.setupfile.passphrasesecret }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+        runAsNonRoot: true
+        supplementalGroups:
+          {{- range $.Values.security.supplementalGroups }}
+          - {{ . }}
+          {{- end }}
+        fsGroup: {{ .Values.security.fsGroup | default "1011" }}
+      containers:
+        - name: {{ .Release.Name }}-pp
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources: {{- toYaml .Values.pp.resources | nindent 13 }}
+          volumeMounts:
+            #volumes for logs
+          {{ if .Values.volumeClaims.logs.enabled }}
+          - name: {{ .Release.Name }}-logs
+            mountPath: /opt/IBM/PEM_PR_PP_servers/usr/servers/pp/logs
+            subPath: {{ .Values.volumeClaims.logs.subpath.pp }}
+          {{ end }}
+            #volumes for db driver jar
+          {{ if .Values.volumeClaims.resources.enabled }}
+          - name: {{ .Release.Name }}-resources
+            mountPath: /opt/IBM/Resources/dbdrivers/
+            subPath: {{ .Values.volumeClaims.resources.subpath.dbdrivers }}
+            readOnly: true
+          {{ end }}
+            #Setup.cfg file
+          - name: {{ .Release.Name }}-pp-setupfile
+            mountPath: /opt/IBM/Resources/Setup.cfg
+            subPath: Setup.cfg
+          #mounting resources to lib directory for sso
+          {{ if .Values.volumeClaims.resources.enabled }}
+          - name: {{ .Release.Name }}-resources
+            mountPath: /opt/IBM/Resources/resources/lib/
+            subPath: {{ .Values.volumeClaims.resources.subpath.sso }}
+            readOnly: true
+          {{ end }}
+          #mounting resources to lib directory for wmq
+          {{ if .Values.volumeClaims.resources.enabled }}
+          - name: {{ .Release.Name }}-resources
+            mountPath: /opt/IBM/Resources/wmq/
+            subPath: {{ .Values.volumeClaims.resources.subpath.wmq }}
+            readOnly: true
+          {{ end }}
+            #localtime (timezone for pod)
+          - name: {{ .Release.Name }}-timezone
+            mountPath: /opt/IBM/localtime
+            subPath: localtime
+            readOnly: true
+            #keystore file for APPLICATION
+          - name: {{ .Release.Name }}-app-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.pp.setupfile.servers.keystore_filename }}
+            subPath: {{ .Values.pp.setupfile.servers.keystore_filename }}
+            #keystore files for db
+          {{ if .Values.dbsetup.setupfile.ssl_connection }}
+            #master DB keystore
+          - name: {{ .Release.Name }}-db-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+            subPath: {{ .Values.dbsetup.setupfile.db_sslTrustStoreName }}
+            #Test DB keystore
+          - name: {{ .Release.Name }}-testdb-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+            subPath: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStoreName }}
+          {{ end }}
+          #keystore and trust_store for sso
+          {{ if .Values.ssoSeas.enable }}
+          {{ if .Values.ssoSeas.truststoreSecret }}
+          - name: {{ .Release.Name }}-sso-truststore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.ssoSeas.truststoreName }}
+            subPath: {{ .Values.ssoSeas.truststoreName }}
+          {{ end }}
+          {{ if .Values.ssoSeas.keystoreSecret }}
+          - name: {{ .Release.Name }}-sso-keystore
+            mountPath: /opt/IBM/Resources/resources/security/{{ .Values.ssoSeas.keystoreName }}
+            subPath: {{ .Values.ssoSeas.keystoreName }}
+          {{ end }}
+          {{ end }}
+            #passphrase file
+          - name: {{ .Release.Name }}-passphrase
+            mountPath: /opt/IBM/Resources/passphrase.txt
+            subPath: passphrase.txt
+          readinessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: {{ .Values.pp.readinessProbe.initialDelaySeconds | default 60 }}
+            periodSeconds: {{ .Values.pp.readinessProbe.periodSeconds }}
+          livenessProbe:
+            tcpSocket:
+              port: 9443
+            initialDelaySeconds: {{ .Values.pp.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pp.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pp.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.pp.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.pp.livenessProbe.failureThreshold }}
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+          env:
+          - name: application
+            value: pp
+          envFrom:
+          #Optional
+          {{ if .Values.dbsetup.setupfile.proxy_password }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.proxy_password }}
+          {{ end }}
+          #Required
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.db_password }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.testmode_db_password }}
+          #optional
+          {{ if .Values.dbsetup.setupfile.ssl_connection }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.db_sslTrustStorePassword }}
+          - secretRef:
+              name: {{ .Values.dbsetup.setupfile.testmode_db_sslTrustStorePassword }}
+          {{ end }}
+          #Required
+          - secretRef:
+              name: {{ .Values.pp.setupfile.servers.keystore_password }}
+          #wmq
+          {{ if .Values.wmq.password }}
+          - secretRef:
+              name: {{ .Values.wmq.password }}
+          {{ end }}
+          {{ if .Values.ssoSeas.enable }}
+          {{ if .Values.ssoSeas.keystorePassword }}
+          - secretRef:
+              name: {{ .Values.ssoSeas.keystorePassword }}
+          {{ end }}
+          {{ if .Values.ssoSeas.truststorePassword }}
+          - secretRef:
+              name: {{ .Values.ssoSeas.truststorePassword }}
+          {{ end }}
+          {{ end }}
+{{- end }}
+{{ end }}

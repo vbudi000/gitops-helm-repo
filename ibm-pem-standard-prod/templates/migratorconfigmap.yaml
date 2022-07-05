@@ -1,0 +1,25 @@
+{{ if .Values.license }}
+{{ if .Values.pem.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-migrator-setupfile
+  labels: {{- include "migrator-pod.labels" . | nindent 5 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-8"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+data:
+  Setup.cfg: |-
+
+    {{- include "ibmpemstandard.dbsetup" . | nindent 5 }}
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.ssomigration" . | nindent 5 }}
+
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.serversetup" . | nindent 5 }}
+
+{{ end }}
+{{ end }}

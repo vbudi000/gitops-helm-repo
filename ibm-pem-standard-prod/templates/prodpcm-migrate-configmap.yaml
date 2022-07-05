@@ -1,0 +1,281 @@
+{{ if .Values.license }}
+{{ if .Values.communitymanager.install }}
+{{ if .Values.communitymanager.prod.enable }}
+{{ if .Values.communitymanager.prod.setupfile.ssomigration.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-prodpcm-migrate-setupfile
+  labels: {{- include "prodpcm-pod.labels" . | nindent 5 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+data:
+  application.yml: |-
+
+    accept-licence: {{ .Values.communitymanager.prod.setupfile.acceptLicence }}
+    cm:
+      color: {{ .Values.communitymanager.prod.setupfile.cm.color }}
+      cmks: ${APPLICATION_PASSPHRASE}
+    server:
+      port:
+      ssl:
+        enabled: {{ .Values.communitymanager.prod.setupfile.server.ssl.enabled }}
+        key-store: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.server.ssl.key_store }}
+        key-store-password: ${SERVER_KEYSTORE_PASSWORD}
+        key-store-type: {{ .Values.communitymanager.prod.setupfile.server.ssl.key_store_type }}
+      serverHeader: {{ .Values.communitymanager.prod.setupfile.server.serverHeader }}
+      compression:
+        enabled: {{ .Values.communitymanager.prod.setupfile.server.compression.enabled }}
+        min-response-size: {{ .Values.communitymanager.prod.setupfile.server.compression.min_response_size }}
+      ajp:
+        enabled: {{ .Values.communitymanager.prod.setupfile.server.ajp.enabled }}
+        port: {{ .Values.communitymanager.prod.setupfile.server.ajp.port }}
+    spring:
+      liquibase:
+        enabled: {{ .Values.communitymanager.prod.setupfile.spring.liquibase.enabled }}
+        liquibase-tablespace: {{ .Values.communitymanager.prod.setupfile.spring.liquibase.liquibase_tablespace }}
+      datasource:
+        type: {{ .Values.communitymanager.prod.setupfile.spring.datasource.type }}
+        url: {{ .Values.communitymanager.prod.setupfile.spring.datasource.url }}
+        username: {{ .Values.communitymanager.prod.setupfile.spring.datasource.username }}
+        driver-class-name: {{ .Values.communitymanager.prod.setupfile.spring.datasource.driver_class_name }}
+        hikari:
+          connection-timeout: {{ .Values.communitymanager.prod.setupfile.spring.datasource.hikari.connection_timeout }}
+          maximum-pool-size: {{ .Values.communitymanager.prod.setupfile.spring.datasource.hikari.maximum_pool_size }}
+          auto-commit: {{ .Values.communitymanager.prod.setupfile.spring.datasource.hikari.auto_commit }}
+        ssl:
+          enabled: {{ .Values.communitymanager.prod.setupfile.spring.datasource.ssl.enabled }}
+          trust-store: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.spring.datasource.ssl.trust_store }}
+          trust-store-type: {{ .Values.communitymanager.prod.setupfile.spring.datasource.ssl.trust_store_type }}
+          trust-store-cmks: ${DB_TRUSTSTORE_PASSWORD}
+      jpa:
+        show_sql: {{ .Values.communitymanager.prod.setupfile.spring.jpa.show_sql }}
+        open-in-view: {{ .Values.communitymanager.prod.setupfile.spring.jpa.open_in_view }}
+        database-platform: {{ .Values.communitymanager.prod.setupfile.spring.jpa.database_platform }}
+        properties:
+          id:
+            new_generator_mappings: {{ .Values.communitymanager.prod.setupfile.spring.jpa.properties.id.new_generator_mappings }}
+        hibernate:
+          naming:
+            physical-strategy: {{ .Values.communitymanager.prod.setupfile.spring.jpa.hibernate.naming.physical_strategy }}
+      mail:
+        host: {{ .Values.communitymanager.prod.setupfile.spring.mail.host }}
+        port: {{ .Values.communitymanager.prod.setupfile.spring.mail.port }}
+        username: {{ .Values.communitymanager.prod.setupfile.spring.mail.username }}
+        cmks: ${SMTP_PASSWORD}
+        from: {{ .Values.communitymanager.prod.setupfile.spring.mail.from }}
+        app-contact-mail: {{ .Values.communitymanager.prod.setupfile.spring.mail.app_contact_mail }}
+        mail-signature: {{ .Values.communitymanager.prod.setupfile.spring.mail.mail_signature }}
+        properties:
+          mail:
+            smtp:
+              auth: {{ .Values.communitymanager.prod.setupfile.spring.mail.properties.mail.smtp.auth }}
+              starttls:
+                enable: {{ .Values.communitymanager.prod.setupfile.spring.mail.properties.mail.smtp.starttls.enable }}
+              ssl:
+                trust: {{ .Values.communitymanager.prod.setupfile.spring.mail.properties.mail.smtp.ssl.trust | quote }}
+      thymeleaf:
+        cache: {{ .Values.communitymanager.prod.setupfile.spring.thymeleaf.cache }}
+    login:
+      sm:
+        enable: {{ .Values.communitymanager.prod.setupfile.login.sm.enable }}
+        param-name: {{ .Values.communitymanager.prod.setupfile.login.sm.param_name }}
+      max-false-attempts: {{ .Values.communitymanager.prod.setupfile.login.max_false_attempts }}
+      reset-false-attempts: {{ .Values.communitymanager.prod.setupfile.login.reset_false_attempts }}
+      user-cmks-expire: {{ .Values.communitymanager.prod.setupfile.login.user_cmks_expire }}
+    basic:
+      auth:
+        username: {{ .Values.communitymanager.prod.setupfile.basic.auth.username }}
+        cmks: ${API_PASSWORD}
+    jwt:
+      secretkey: {{ .Values.communitymanager.prod.setupfile.jwt.secretkey }}
+      session-expire: {{ .Values.communitymanager.prod.setupfile.jwt.session_expire }}
+    sterling-b2bi:
+      core-bp:
+        inbound: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.core_bp.inbound }}
+        outbound: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.core_bp.outbound }}
+      user:
+        cmks: ${STERLING_SYSTEM_PASSPHRASE}
+        cmks-validation: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.user.cmks_validation }}
+        cmks-validation-profile: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.user.cmks_validation_profile }}
+      b2bi-api:
+        active: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.active }}
+        auth-host:
+          {{- range $key, $value := .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.auth_host }}
+          '{{ $value.name }}': {{ $value.value }}
+          {{- end }}
+        api:
+          username: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.api.username }}
+          cmks: ${STERLING_B2BAPI_PASSWORD}
+          baseUrl: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.api.baseUrl }}
+        b2bi-sfg-api:
+          active: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.b2bi_sfg_api.active }}
+          community-name: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.b2bi_sfg_api.community_name }}
+        sfg-api:
+          active: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.sfg_api.active }}
+          api:
+            username: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.sfg_api.api.username }}
+            cmks: ${STERLING_SFGAPI_PASSWORD}
+            baseUrl: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.sfg_api.api.baseUrl }}
+        as2:
+          active: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.as2.active }}
+        cd:
+          net-map-name: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.net_map_name }}
+          proxy:
+            internal:
+              server-host: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.server_host }}
+              server-port: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.server_port }}
+              secure-plus-option: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.secure_plus_option }}
+              ca-cert: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.ca_cert }}
+              system-certificate: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.system_certificate }}
+              security-protocol: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.security_protocol }}
+              cipher-suites: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.internal.cipher_suites }}
+            external:
+              server-host: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.server_host }}
+              server-port: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.server_port }}
+              secure-plus-option: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.secure_plus_option }}
+              ca-cert: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.ca_cert }}
+              system-certificate: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.system_certificate }}
+              security-protocol: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.security_protocol }}
+              cipher-suites: {{ .Values.communitymanager.prod.setupfile.sterling_b2bi.b2bi_api.cd.proxy.external.cipher_suites }}
+    ssp:
+      active: {{ .Values.communitymanager.prod.setupfile.ssp.active }}
+      api:
+        username: {{ .Values.communitymanager.prod.setupfile.ssp.api.username }}
+        cmks: ${SSP_PASSWORD}
+        baseUrl: {{ .Values.communitymanager.prod.setupfile.ssp.api.baseUrl }}
+    adapters:
+      ftpServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.ftpServerAdapterName }}
+      ftpsClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.ftpsClientAdapterName }}
+      ftpClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.ftpClientAdapterName }}
+      ftpsServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.ftpsServerAdapterName }}
+      sftpServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sftpServerAdapterName }}
+      sftpClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sftpClientAdapterName }}
+      as2ServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.as2ServerAdapterName }}
+      as2ClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.as2ClientAdapterName }}
+      as2HttpClientAdapter: {{ .Values.communitymanager.prod.setupfile.adapters.as2HttpClientAdapter }}
+      cdClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.cdClientAdapterName }}
+      httpServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.httpServerAdapterName }}
+      httpsServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.httpsServerAdapterName }}
+      mqAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.mqAdapterName }}
+      wsServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.wsServerAdapterName }}
+      fsAdapter: {{ .Values.communitymanager.prod.setupfile.adapters.fsAdapter }}
+      sfgSftpClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgSftpClientAdapterName }}
+      sfgSftpServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgSftpServerAdapterName }}
+      sfgFtpClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgFtpClientAdapterName }}
+      sfgFtpServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgFtpServerAdapterName }}
+      sfgFtpsClientAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgFtpsClientAdapterName }}
+      sfgFtpsServerAdapterName: {{ .Values.communitymanager.prod.setupfile.adapters.sfgFtpsServerAdapterName }}
+    alerts:
+      email:
+        enable:
+          create: {{ .Values.communitymanager.prod.setupfile.alerts.email.enable.create }}
+          update: {{ .Values.communitymanager.prod.setupfile.alerts.email.enable.update }}
+          delete: {{ .Values.communitymanager.prod.setupfile.alerts.email.enable.delete }}
+          reports: {{ .Values.communitymanager.prod.setupfile.alerts.email.enable.reports }}
+    workFlow:
+      duplicate:
+        mft: {{ .Values.communitymanager.prod.setupfile.workFlow.duplicate.mft }}
+        docHandling: {{ .Values.communitymanager.prod.setupfile.workFlow.duplicate.docHandling }}
+    file-transfer:
+      search:
+        time-range: {{ .Values.communitymanager.prod.setupfile.file_transfer.search.time_range }}
+    saml:
+      jwt:
+        secret-key: {{ .Values.communitymanager.prod.setupfile.saml.jwt.secret_key }}
+        session-expire: {{ .Values.communitymanager.prod.setupfile.saml.jwt.session_expire }}
+      idp:
+        metadata: {{ .Values.communitymanager.prod.setupfile.saml.idp.metadata }}
+        entity-id: {{ .Values.communitymanager.prod.setupfile.saml.idp.entity_id }}
+      scheme: {{ .Values.communitymanager.prod.setupfile.saml.scheme }}
+      host: {{ .Values.communitymanager.prod.setupfile.saml.host }}
+      url:
+        client: {{ .Values.communitymanager.prod.setupfile.saml.url.client }}
+        entity: {{ .Values.communitymanager.prod.setupfile.saml.url.entity }}
+      ssl:
+        key-store: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.saml.ssl.key_store }}
+        key-cmks: ${SAML_KEY_PASSWORD}
+        store-cmks: ${SAML_KEYSTORE_PASSWORD}
+        key-alias: {{ .Values.communitymanager.prod.setupfile.saml.ssl.key_alias }}
+    pem:
+      remote:
+        server:
+          pem-key: /opt/IBM/PCM/{{ .Values.communitymanager.prod.setupfile.pem.remote.server.pem_key }}
+          base-directory:
+            path: {{ .Values.communitymanager.prod.setupfile.pem.remote.server.base_directory.path }}
+          session-timeout: {{ .Values.communitymanager.prod.setupfile.pem.remote.server.session_timeout }}
+      datasource:
+        url: {{ .Values.communitymanager.prod.setupfile.pem.datasource.url }}
+        username: {{ .Values.communitymanager.prod.setupfile.pem.datasource.username }}
+        cmks: ${PEM_DB_PASSWORD}
+        driver-class-name: {{ .Values.communitymanager.prod.setupfile.pem.datasource.driver_class_name }}
+      api-ws:
+        active: {{ .Values.communitymanager.prod.setupfile.pem.api_ws.active }}
+        base-url: {{ .Values.communitymanager.prod.setupfile.pem.api_ws.base_url }}
+        username: {{ .Values.communitymanager.prod.setupfile.pem.api_ws.username }}
+        cmks: ${PEM_API_PASSWORD}
+    file:
+      archive:
+        scheduler:
+          cron: {{ .Values.communitymanager.prod.setupfile.file.archive.scheduler.cron | quote }}
+          delete-files-job:
+            active: {{ .Values.communitymanager.prod.setupfile.file.archive.scheduler.delete_files_job.active }}
+            script-file-loc: {{ .Values.communitymanager.prod.setupfile.file.archive.scheduler.delete_files_job.script_file_loc }}
+        pgp:
+          private-key: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.file.archive.pgp.private_key }}
+          cmks: ${PGP_PASSPHRASE}
+        aes:
+          secret-key: {{ .Values.communitymanager.prod.setupfile.file.archive.aes.secret_key }}
+          salt: {{ .Values.communitymanager.prod.setupfile.file.archive.aes.salt }}
+    data:
+      action: {{ .Values.communitymanager.prod.setupfile.ssomigration.data.action }}
+      file-name: {{ .Values.communitymanager.prod.setupfile.ssomigration.data.file_name }}
+    sso-ssp-seas:
+      ssp:
+        logout-endpoint: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.ssp.logout_endpoint }}
+        user-header-name: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.ssp.user_header_name }}
+        token-cookie-name: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.ssp.token_cookie_name }}
+      seas:
+        auth-profile: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.auth_profile }}
+        host: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.host }}
+        port: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.port }}
+        ssl:
+          enabled: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.enabled }}
+          protocol: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.protocol }}
+          cipher-suits: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.cipher_suits }}
+          trust-store:
+            name: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.trust_store.name }}
+            cmks: ${SEAS_TRUSTSTORE_PASSWORD}
+            alias: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.trust_store.alias }}
+            type: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.trust_store.type }}
+          key-store:
+            name: /opt/IBM/config/{{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.key_store.name }}
+            cmks: ${SEAS_KEYSTORE_PASSWORD}
+            alias: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.key_store.alias }}
+            type: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.seas.ssl.key_store.type }}
+      user-request:
+        user:
+          email: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.email }}
+          role: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.role }}
+          first-name: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.first_name }}
+          last-name: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.last_name }}
+          phone: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.phone }}
+          external-id: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.external_id }}
+          preferred-language: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user.preferred_language }}
+        user-roles:
+          super_admin: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.super_admin }}
+          admin: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.admin }}
+          on_boarder: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.on_boarder }}
+          business_admin: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.business_admin }}
+          business_user: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.business_user }}
+          data_processor: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.data_processor }}
+          data_processor_restricted: {{ .Values.communitymanager.prod.setupfile.sso_ssp_seas.user_request.user_roles.data_processor_restricted }}
+
+{{ end }}
+{{ end }}
+{{ end }}
+{{ end }}

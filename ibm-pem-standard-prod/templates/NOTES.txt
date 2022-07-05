@@ -1,0 +1,26 @@
+{{ if .Values.license }}
+Please wait while the application is getting deployed.
+1. Run the below command to check the status of application server replica sets. At least 1 replica must be in 'READY' state.
+  oc get replicasets -l release={{ .Release.Name }} -n {{ .Release.Namespace }}
+
+2. Run the below command to check the status of the application server pods for the release.
+  oc get pods -l release={{ .Release.Name }} -n {{ .Release.Namespace }} -o wide
+
+    To view the logs for a pod, run the below command.
+  oc logs <pod name> -n {{ .Release.Namespace }}
+
+3. Access the application by running the following url
+
+    {{- if .Values.pem.hostname }}
+    PEM - https://{{ .Values.pem.hostname }}
+    {{ end }}
+    {{- if .Values.pem.hostname }}
+    PP - https://{{ .Values.pem.hostname }}
+    {{ end }}
+    {{- if .Values.pem.hostname }}
+    PR - https://{{ .Values.pem.hostname }}
+    {{ end }}
+{{ else }}
+licence is not set to true {{ .Release.Name }} will not be installed
+
+{{ end }}

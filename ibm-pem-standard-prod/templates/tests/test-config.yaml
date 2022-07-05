@@ -1,0 +1,60 @@
+{{ if .Values.license }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-test-config"
+  annotations:
+    "helm.sh/hook": test-success
+  labels: {{- include "test-pod.labels" . | nindent 5 }}
+spec:
+  serviceAccountName: {{ .Values.serviceAccountName }}
+  imagePullSecrets:
+  - name: {{ .Values.test.image.pullSecret }}
+  hostNetwork: false
+  hostPID: false
+  hostIPC: false
+  securityContext:
+    runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+    runAsNonRoot: true
+    supplementalGroups:
+      {{- range $.Values.security.supplementalGroups }}
+      - {{ . }}
+      {{- end }}
+    fsGroup: {{ .Values.security.fsGroup | default "1011" }}
+  volumes:
+    #Setup.cfg file for APPLICATION
+  - name: {{ .Release.Name }}-pem-setupfile
+    configMap:
+        name: {{ .Release.Name }}-pem-setupfile
+  containers:
+  - name: "test-url"
+    resources:
+      requests:
+        ephemeral-storage: 2Mi
+        memory: "1Gi"
+        cpu: "250m"
+      limits:
+        ephemeral-storage: 6Mi
+        memory: "2Gi"
+        cpu: "500m"
+    image: "{{ .Values.test.image.repository }}/{{ .Values.test.image.name }}:{{ .Values.test.image.tag }}"
+    imagePullPolicy: "{{ .Values.test.image.pullPolicy }}"
+    command: ["/bin/sh", "-c", "echo 'Check configuration file available in Persistent Volume' | [ -f /opt/IBM/Resources/Setup.cfg ] && echo 'configuration file available'"]
+    volumeMounts:
+      #Setup.cfg file
+    - name: {{ .Release.Name }}-pem-setupfile
+      mountPath: /opt/IBM/Resources/Setup.cfg
+      subPath: Setup.cfg
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      privileged: false
+      runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+      readOnlyRootFilesystem: false
+      allowPrivilegeEscalation: false
+  restartPolicy: Never
+  affinity: {{- include "ibmpem.affinity" . | nindent 9 }}
+{{ else }}
+#licence is not set to true no pods will get deployed
+{{ end }}

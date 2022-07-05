@@ -1,0 +1,21 @@
+{{ if .Values.license }}
+{{ if .Values.pr.enable }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Release.Name }}-pr-route
+  labels: {{- include "pr-pod.labels" . | nindent 5 }}
+spec:
+  {{ if .Values.pr.hostname }}
+  host: {{ .Values.pr.hostname }}
+  {{ end }}
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-pr-service
+  port:
+    targetPort: pr-port
+  tls:
+    termination: {{ .Values.pr.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.pr.route.tls.insecureEdgeTerminationPolicy }}
+{{- end }}
+{{ end }}

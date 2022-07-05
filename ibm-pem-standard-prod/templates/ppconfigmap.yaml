@@ -1,0 +1,40 @@
+{{ if .Values.license }}
+{{ if .Values.pp.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-pp-setupfile
+  labels: {{- include "pp-pod.labels" . | nindent 5 }}
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options="{{ .Values.pp.setupfile.servers.jvm_options }}"
+    servers.keystore_password="$PP_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias="{{ .Values.pp.setupfile.servers.keystore_alias }}"
+    servers.keystore_filename="{{ .Values.pp.setupfile.servers.keystore_filename }}"
+    servers.max_file_size="{{ .Values.pp.setupfile.servers.max_file_size }}"
+    servers.max_files="{{ .Values.pp.setupfile.servers.max_files }}"
+    servers.console_log_level="{{ .Values.pp.setupfile.servers.console_log_level }}"
+    servers.trace_specification="{{ .Values.pp.setupfile.servers.trace_specification }}"
+
+    ##pp properties
+
+    servers.enable_jms_features="{{ .Values.pp.setupfile.servers.enable_jms_features }}"
+    servers.provisioner_request_queue="{{ .Values.pp.setupfile.servers.provisioner_request_queue }}"
+    servers.provisioner_response_queue="{{ .Values.pp.setupfile.servers.provisioner_response_queue }}"
+    servers.remote_server_ssl="{{ .Values.pp.setupfile.servers.remote_server_ssl | default "false" }}"
+    servers.remote_server_host="{{ .Values.pp.setupfile.servers.remote_server_host }}"
+    servers.remote_server_port="{{ .Values.pp.setupfile.servers.remote_server_port | default "80"}}"
+    {{- include "ibmpemstandard.wmq" . | nindent 5 }}
+
+    {{ if .Values.gateway.enable }}
+    apigateway.domainName={{ .Values.gateway.hostname }}
+    apigateway.pem_servers={{ .Values.gateway.setupfile.gateway.pem_servers }}
+    apigateway.pr_servers={{ .Values.gateway.setupfile.gateway.pr_servers }}
+    {{ end }}
+
+    {{- include "ibmpemstandard.dbsetup" . | nindent 5 }}
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.serversetup" . | nindent 5 }}
+{{- end }}
+{{ end }}

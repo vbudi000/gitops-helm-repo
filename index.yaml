@@ -3,7 +3,7 @@ entries:
   ibm-pem-standard-prod:
   - apiVersion: v2
     appVersion: 6.2.0.2
-    created: "2022-06-29T22:35:28.609261-05:00"
+    created: "2022-07-05T06:49:43.689182-05:00"
     description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
       resources required to onboard new partners while managing and maintaining existing
       partners. By automating the onboarding process, Partner Engagement Manager limits
@@ -28,58 +28,88 @@ entries:
     name: ibm-pem-standard-prod
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/ibm-pem-standard-prod-1.0.3.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/ibm-pem-standard-prod-1.0.3.tgz
     version: 1.0.3
+  ibm-pem-standard-vbudi:
+  - apiVersion: v2
+    appVersion: 6.2.0.2
+    created: "2022-07-05T06:49:43.69658-05:00"
+    description: IBM® Sterling Partner Engagement Manager (PEM) reduces the time and
+      resources required to onboard new partners while managing and maintaining existing
+      partners. By automating the onboarding process, Partner Engagement Manager limits
+      costly manual errors and increases efficiency as partners can maintain their
+      own records. Documentation For additional details regarding install parameters
+      check https://www.ibm.com/docs/en/spems/6.2.0?topic=installing-Prerequisites-Certified-Container.
+      License By installing this product you accept the license terms http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-MILI-BQXF4G&title=IBM%20Sterling%20B2B%20Integrator%20Certified%20Container%20V6.1."
+    digest: cbd415dac61decf0b874b862d7cbd350c69d346c5a8c03d4a3a45e0daea0bf6e
+    home: https://www.ibm.com/support/knowledgecenter/SS3JSW_6.1.0/kc_welcome_b2bi.html
+    icon: https://raw.githubusercontent.com/IBM/charts/master/logo/ibm-pem-icon.png
+    keywords:
+    - pem
+    - pemstandard
+    - Commercial
+    - amd64
+    - Automation
+    - RHOCP
+    - Other
+    kubeVersion: '>=1.17'
+    maintainers:
+    - name: IBM
+    name: ibm-pem-standard-vbudi
+    type: application
+    urls:
+    - https://vbudi000.github.io/gitops-helm-repo/ibm-pem-standard-vbudi-1.0.0.tgz
+    version: 1.0.0
   ibm-sfg-db2:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-29T22:35:28.610605-05:00"
+    created: "2022-07-05T06:49:43.697898-05:00"
     description: A Helm chart for Kubernetes
     digest: f208446a3ce717e4080afb8fc425fd94e388e7f9a81a945927f04cb8ba0eccd3
     name: ibm-sfg-db2
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/ibm-sfg-db2-0.2.1.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/ibm-sfg-db2-0.2.1.tgz
     version: 0.2.1
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-29T22:35:28.609967-05:00"
+    created: "2022-07-05T06:49:43.69726-05:00"
     description: A Helm chart for Kubernetes
     digest: 09ea116b0a86662c80554a9ac10dfc0edf2e997d820c82c216326bcd0f4e0d1b
     name: ibm-sfg-db2
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/ibm-sfg-db2-0.2.0.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/ibm-sfg-db2-0.2.0.tgz
     version: 0.2.0
   service-account:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-29T22:35:28.615216-05:00"
+    created: "2022-07-05T06:49:43.699773-05:00"
     description: A Helm chart for Kubernetes
     digest: fe1ac94013522f94a82b7d078d294514dda8b114ea24bfda05985b292b2fddd4
     name: service-account
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/service-account-0.6.5.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/service-account-0.6.5.tgz
     version: 0.6.5
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-29T22:35:28.61288-05:00"
+    created: "2022-07-05T06:49:43.699173-05:00"
     description: A Helm chart for Kubernetes
     digest: 594f8d0a1c4c1528e9ed51235b252303161e9e1a33203aeeec9c5a474e77ee9c
     name: service-account
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/service-account-0.6.4.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/service-account-0.6.4.tgz
     version: 0.6.4
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-29T22:35:28.612276-05:00"
+    created: "2022-07-05T06:49:43.698528-05:00"
     description: A Helm chart for Kubernetes
     digest: b2ea02c3b829bc600f104791df0ed7b760ed0dfa1993563008c2bac1b0c3930a
     name: service-account
     type: application
     urls:
-    - https://raw.githubusercontent.com/vbudi000/gitops-helm-repo/main/service-account-0.6.3.tgz
+    - https://vbudi000.github.io/gitops-helm-repo/service-account-0.6.3.tgz
     version: 0.6.3
-generated: "2022-06-29T22:35:28.596875-05:00"
+generated: "2022-07-05T06:49:43.684592-05:00"

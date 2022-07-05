@@ -1,0 +1,25 @@
+{{ if .Values.license }}
+{{ if .Values.communitymanager.install }}
+{{ if .Values.communitymanager.prod.enable }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Release.Name }}-prodpcm-route
+  labels: {{- include "prodpcm-pod.labels" . | nindent 5 }}
+spec:
+  {{ if .Values.communitymanager.prod.hostname }}
+  host: {{ .Values.communitymanager.prod.hostname }}
+  {{ end }}
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-prodpcm-service
+  port:
+    targetPort: 9080
+  {{ if .Values.communitymanager.prod.setupfile.server.ssl.enabled }}
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: Redirect
+  {{ end }}
+{{ end }}
+{{ end }}
+{{ end }}

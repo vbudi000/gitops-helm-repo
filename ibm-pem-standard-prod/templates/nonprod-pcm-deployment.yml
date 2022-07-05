@@ -1,0 +1,307 @@
+{{ if .Values.license }}
+{{ if .Values.communitymanager.install }}
+{{ if .Values.communitymanager.nonprod.enable }}
+kind: "Deployment"
+apiVersion: "apps/v1"
+metadata:
+  name: {{ .Release.Name }}-pcm-nonprod
+  labels: {{- include "nonprodpcm-pod.labels" . | nindent 5 }}
+spec:
+  replicas: {{ .Values.communitymanager.nonprod.replicacount }}
+  selector:
+    matchLabels: {{- include "nonprodpcm.selectorLabels" . | nindent 7 }}
+  template:
+    metadata:
+      labels: {{- include "nonprodpcm-pod.labels" . | nindent 9 }}
+      annotations:
+        productID: {{- include "ibmpem.metering.productId" . | indent 1 }}
+        productMetric: {{- include "ibmpem.metering.productMetric" . | indent 1 }}
+        productName: {{- include "ibmpem.metering.productName" . | indent 1 }}
+        productVersion: {{- include "ibmpem.metering.productVersion" . | indent 1 }}
+        productChargedContainers: {{- include "ibmpem.metering.productChargedContainers" . | indent 1 }}
+        checksum/config: {{ include (print $.Template.BasePath "/nonprodpcmconfigmap.yaml") . | sha256sum }}
+    spec:
+      affinity: {{- include "ibmpem.affinity" . | nindent 9 }}
+      volumes:
+      #jars
+      {{ if .Values.volumeClaims.resources.enabled }}
+      - name: {{ .Release.Name }}-resources
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-resources-pvc
+      {{ end }}
+      #setupfile
+      - name: {{ .Release.Name }}-setupfile
+        configMap:
+            name: {{ .Release.Name }}-nonprodpcm-setupfile
+      #archive
+      {{ if .Values.communitymanager.nonprod.archive.enable }}
+      - name: {{ .Release.Name }}-archive
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-nonprodpcm-archive
+      {{ end }}
+      #logs
+      {{ if .Values.volumeClaims.logs.enabled }}
+      {{ if not .Values.setupfile.servers.enableConsoleLogs }}
+      - name: {{ .Release.Name }}-logs
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-logs-pvc
+      {{ end }}
+      {{ end }}
+      #app keystore
+      {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.keystoresecret }}
+      - name: {{ .Release.Name }}-app-keystore
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.server.ssl.keystoresecret }}
+      {{ end }}
+      {{ end }}
+      #DB keystore
+      {{ if .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trustStoreSecret }}
+      - name: {{ .Release.Name }}-pcmdb-keystore
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trustStoreSecret }}
+      {{ end }}
+      {{ end }}
+      #PEM key for scripts
+      {{ if .Values.communitymanager.nonprod.setupfile.pem.remote.server.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.pem.remote.server.pemKeySecret }}
+      - name: {{ .Release.Name }}-pem-key
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.pem.remote.server.pemKeySecret }}
+      {{ end }}
+      {{ end }}
+      #PGP key
+      {{ if .Values.communitymanager.nonprod.setupfile.file.archive.pgp.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.file.archive.pgp.privateKeySecret }}
+      - name: {{ .Release.Name }}-pgp-key
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.file.archive.pgp.privateKeySecret }}
+      {{ end }}
+      {{ end }}
+      #Seas truststore
+      {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.secretName }}
+      - name: {{ .Release.Name }}-seas-truststore
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.secretName }}
+      {{ end }}
+      {{ end }}
+      #Seas keystore
+      {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.enabled }}
+      {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.secretName }}
+      - name: {{ .Release.Name }}-seas-keystore
+        secret:
+           secretName: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.secretName }}
+      {{ end }}
+      {{ end }}
+      imagePullSecrets:
+        - name: {{ .Values.communitymanager.image.pullSecret }}
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+        runAsNonRoot: true
+        supplementalGroups:
+          {{- range $.Values.security.supplementalGroups }}
+          - {{ . }}
+          {{- end }}
+        fsGroup: {{ .Values.security.fsGroup | default "1011" }}
+      containers:
+        - name:  {{ .Release.Name }}-nonprod-pcm
+          image: "{{ .Values.communitymanager.image.repository }}:{{ .Values.communitymanager.image.tag }}"
+          imagePullPolicy: {{ .Values.communitymanager.image.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsUser: {{ .Values.security.runAsUser | default "1011" }}
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          resources: {{- toYaml .Values.communitymanager.nonprod.resources | nindent 13 }}
+          volumeMounts:
+            #jars
+        {{ if .Values.volumeClaims.resources.enabled }}
+          - name: {{ .Release.Name }}-resources
+            mountPath: /opt/IBM/PCM/jars
+            subPath: {{ .Values.volumeClaims.resources.subpath.pcm }}
+        {{ end }}
+          #setup[file
+          - name: {{ .Release.Name }}-setupfile
+            mountPath: /opt/IBM/config/application.yml
+            subPath: application.yml
+            #archive location
+          {{ if .Values.communitymanager.nonprod.archive.enable }}
+          - name: {{ .Release.Name }}-archive
+            mountPath: /opt/IBM/PCM/Archive
+          {{ end }}
+          #logs
+          {{ if .Values.volumeClaims.logs.enabled }}
+          {{ if not .Values.setupfile.servers.enableConsoleLogs }}
+          - name: {{ .Release.Name }}-logs
+            mountPath: /opt/IBM/PCM/logs
+            subPath: {{ .Values.volumeClaims.logs.subpath.pcmNonProd }}
+          {{ end }}
+          {{ end }}
+          #app keystore
+          {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.keystoresecret }}
+          - name: {{ .Release.Name }}-app-keystore
+            mountPath: /opt/IBM/config/{{ .Values.communitymanager.nonprod.setupfile.server.ssl.key_store }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.server.ssl.key_store }}
+          {{ end }}
+          {{ end }}
+          #db keystore
+          {{ if .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trustStoreSecret }}
+          - name: {{ .Release.Name }}-pcmdb-keystore
+            mountPath: /opt/IBM/config/{{ .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trust_store }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trust_store }}
+          {{ end }}
+          {{ end }}
+          #pem key
+          {{ if .Values.communitymanager.nonprod.setupfile.pem.remote.server.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.pem.remote.server.pemKeySecret }}
+          - name: {{ .Release.Name }}-pem-key
+            mountPath: /opt/IBM/PCM/{{ .Values.communitymanager.nonprod.setupfile.pem.remote.server.pem_key }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.pem.remote.server.pem_key }}
+          {{ end }}
+          {{ end }}
+          #PGP key
+          {{ if .Values.communitymanager.nonprod.setupfile.file.archive.pgp.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.file.archive.pgp.privateKeySecret }}
+          - name: {{ .Release.Name }}-pgp-key
+            mountPath: /opt/IBM/config/{{ .Values.communitymanager.nonprod.setupfile.file.archive.pgp.private_key }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.file.archive.pgp.private_key }}
+          {{ end }}
+          {{ end }}
+          #Seas truststore
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.secretName }}
+          - name: {{ .Release.Name }}-seas-truststore
+            mountPath: /opt/IBM/config/{{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.name }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.name }}
+          {{ end }}
+          {{ end }}
+          #Seas keystore
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.enabled }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.secretName }}
+          - name: {{ .Release.Name }}-seas-keystore
+            mountPath: /opt/IBM/config/{{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.name }}
+            subPath: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.name }}
+          {{ end }}
+          {{ end }}
+          readinessProbe:
+            tcpSocket:
+              port: 9080
+            initialDelaySeconds: {{ .Values.communitymanager.nonprod.readinessProbe.initialDelaySeconds | default 100 }}
+            periodSeconds: {{ .Values.communitymanager.nonprod.readinessProbe.periodSeconds }}
+          livenessProbe:
+            tcpSocket:
+              port: 9080
+            initialDelaySeconds: {{ .Values.communitymanager.nonprod.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.communitymanager.nonprod.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.communitymanager.nonprod.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.communitymanager.nonprod.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.communitymanager.nonprod.livenessProbe.failureThreshold }}
+          ports:
+            - containerPort: 9080
+              protocol: "TCP"
+          env:
+            - name: NODE_IP
+              value: localhost
+            - name: NODE_PORT
+              value: "9080"
+            {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.enable }}
+            - name: APP
+              value: ocp-sso-ssp-seas
+            {{ else }}
+            - name: APP
+              value: ocp-cm
+            {{ end }}
+            {{ if .Values.setupfile.servers.enableConsoleLogs }}
+            - name: CONSOLE_LOGGING
+              value: true
+            {{ else }}
+            - name: CONSOLE_LOGGING
+              value: false
+            {{ end }}
+            - name: LOGGER_LEVEL
+              value: {{ .Values.communitymanager.nonprod.setupfile.loggerLevel }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.spring.datasource.dbpassword }}
+          {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.enable }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.server.ssl.keystorepassword }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.cm.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.cm.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.server.ssl.key_store_password }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.server.ssl.key_store_password }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trust_store_cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.spring.datasource.ssl.trust_store_cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.spring.mail.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.spring.mail.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.basic.auth.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.basic.auth.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sterling_b2bi.user.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.sterling_b2bi.user.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sterling_b2bi.b2bi_api.api.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.sterling_b2bi.b2bi_api.api.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sterling_b2bi.b2bi_api.sfg_api.api.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.sterling_b2bi.b2bi_api.sfg_api.api.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.ssp.api.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.ssp.api.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.saml.ssl.key_cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.saml.ssl.key_cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.saml.ssl.store_cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.saml.ssl.store_cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.pem.datasource.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.pem.datasource.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.pem.api_ws.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.pem.api_ws.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.file.archive.pgp.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.file.archive.pgp.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.trust_store.cmks }}
+          {{ end }}
+          {{ if .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.cmks }}
+          - secretRef:
+              name: {{ .Values.communitymanager.nonprod.setupfile.sso_ssp_seas.seas.ssl.key_store.cmks }}
+          {{ end }}
+
+{{ end }}
+{{ end }}
+{{ end }}

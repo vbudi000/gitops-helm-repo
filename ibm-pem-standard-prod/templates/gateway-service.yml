@@ -1,0 +1,16 @@
+{{ if .Values.license }}
+{{ if .Values.gateway.enable}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-gateway-service
+  labels: {{- include "api-pod.labels" . | nindent 5 }}
+spec:
+  selector: {{- include "api.selectorLabels" . | nindent 9 }}
+  ports:
+    - protocol: TCP
+      name: gateway-port
+      port: 80
+      targetPort: 9443
+{{ end }}
+{{ end }}

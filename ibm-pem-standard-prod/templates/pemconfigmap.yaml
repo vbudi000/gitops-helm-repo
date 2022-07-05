@@ -1,0 +1,30 @@
+{{ if .Values.license }}
+{{ if .Values.pem.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-pem-setupfile
+  labels: {{- include "pem-pod.labels" . | nindent 5 }}
+data:
+  Setup.cfg: |-
+
+    servers.jvm_options="{{ .Values.pem.setupfile.servers.jvm_options }}"
+    servers.keystore_password="$PEM_SERVERS_KEYSTORE_PASSWORD"
+    servers.keystore_alias="{{ .Values.pem.setupfile.servers.keystore_alias }}"
+    servers.keystore_filename="{{ .Values.pem.setupfile.servers.keystore_filename }}"
+    servers.max_file_size="{{ .Values.pem.setupfile.servers.max_file_size }}"
+    servers.max_files="{{ .Values.pem.setupfile.servers.max_files }}"
+    servers.console_log_level="{{ .Values.pem.setupfile.servers.console_log_level }}"
+    servers.trace_specification="{{ .Values.pem.setupfile.servers.trace_specification }}"
+
+    {{ if .Values.gateway.enable }}
+    apigateway.domainName={{ .Values.gateway.hostname }}
+    apigateway.pem_servers={{ .Values.gateway.setupfile.gateway.pem_servers }}
+    apigateway.pr_servers={{ .Values.gateway.setupfile.gateway.pr_servers }}
+    {{ end }}
+
+    {{- include "ibmpemstandard.dbsetup" . | nindent 5 }}
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.serversetup" . | nindent 5 }}
+{{- end }}
+{{ end }}

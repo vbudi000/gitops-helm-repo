@@ -1,0 +1,22 @@
+{{ if .Values.license }}
+{{ if .Values.volumeClaims.resources.enabled-false }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-resources-pvc
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-6"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.resources.capacity }}
+  storageClassName: {{ .Values.volumeClaims.resources.storageclass }}
+{{ end }}
+{{ end }}

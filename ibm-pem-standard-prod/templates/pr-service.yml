@@ -1,0 +1,16 @@
+{{ if .Values.license }}
+{{ if .Values.pr.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pr-service
+  labels: {{- include "pr-pod.labels" . | nindent 5 }}
+spec:
+  selector: {{- include "pr.selectorLabels" . | nindent 7 }}
+  ports:
+    - protocol: TCP
+      name: pr-port
+      port: 80
+      targetPort: 9443
+{{- end }}
+{{ end }}

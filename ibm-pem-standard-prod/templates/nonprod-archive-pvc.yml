@@ -1,0 +1,21 @@
+{{ if .Values.license }}
+{{ if .Values.communitymanager.install }}
+{{ if .Values.communitymanager.nonprod.enable }}
+{{ if .Values.communitymanager.nonprod.archive.enable }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-nonprodpcm-archive
+  labels: {{- include "nonprodpcm-pod.labels" . | nindent 5 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.communitymanager.nonprod.archive.capacity }}
+  storageClassName: {{ .Values.communitymanager.nonprod.archive.storageclass }}
+{{ end }}
+{{ end }}
+{{ end }}
+{{ end }}

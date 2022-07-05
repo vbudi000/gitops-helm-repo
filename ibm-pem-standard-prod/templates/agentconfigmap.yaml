@@ -1,0 +1,28 @@
+{{ if .Values.license }}
+{{ if .Values.agent.enable }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-agent-setupfile
+  labels: {{- include "agent-pod.labels" . | nindent 5 }}
+data:
+  Setup.cfg: |-
+
+    ## AGENT
+    agent.type="{{ .Values.agent.setupfile.agent.type }}"
+    agent.jvm_options="{{ .Values.agent.setupfile.agent.jvm_options }}"
+    agent.antivirus_server_host="{{ .Values.agent.setupfile.agent.antivirus_server_host }}"
+    agent.antivirus_server_port="{{ .Values.agent.setupfile.agent.antivirus_server_port }}"
+    agent.no_of_db_connections="{{ .Values.agent.setupfile.agent.no_of_db_connections }}"
+    agent.retry_interval_in_sec="{{ .Values.agent.setupfile.agent.retry_interval_in_sec }}"
+    agent.max_retry_count="{{ .Values.agent.setupfile.agent.max_retry_count }}"
+    agent.com_ibm_vch_identity_security_limit="{{ .Values.agent.setupfile.agent.com_ibm_vch_identity_security_limit }}"
+    agent.com_ibm_vch_identity_security_level="{{ .Values.agent.setupfile.agent.com_ibm_vch_identity_security_level }}"
+    agent.com_ibm_vch_identity_security_count="{{ .Values.agent.setupfile.agent.com_ibm_vch_identity_security_count }}"
+    agent.scan_extensibility_class="{{ .Values.agent.setupfile.agent.scan_extensibility_class }}"
+
+    {{- include "ibmpemstandard.dbsetup" . | nindent 5 }}
+    {{- include "ibmpemstandard.seas" . | nindent 5 }}
+    {{- include "ibmpemstandard.serversetup" . | nindent 5 }}
+{{ end }}
+{{ end }}
