@@ -14,6 +14,9 @@ spec:
         app: {{ .Values.serviceName }}
     spec:
       serviceAccount: {{ .Values.serviceAccount }}
+      volumes:
+      - name: db2cfg
+        configMap: {{ .Values.name }}-db2cfg
       containers:
         - name: db2
           securityContext:
@@ -33,6 +36,8 @@ spec:
           - name: TO_CREATE_SAMBLEDB
             value: "true"
           volumeMounts:
+          - mountPath: /var/custom
+            name: db2cfg
           - mountPath: /database
             name: db2vol
   volumeClaimTemplates:

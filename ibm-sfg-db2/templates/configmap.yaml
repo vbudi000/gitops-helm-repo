@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: {{ .Values.name }}-db2cfg
+data:
+- createDB.sh: |
+    #!/bin/sh +
+
+    whoami
+    sudo -i -u db2inst1 bash -c '/opt/ibm/db2/V11.5/bin/db2 -stvf /var/custom/createdb.sql -z createdb.log'
+- createdb.sql: {{ .Values.createdb }}
