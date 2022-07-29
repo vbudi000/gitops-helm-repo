@@ -3,4 +3,4 @@ appVersion: 1.16.0
 description: DB2 chart for Stateful set application with custom configuration
 name: ibm-sfg-db2
 type: application
-version: 0.3.0
+version: 0.3.1

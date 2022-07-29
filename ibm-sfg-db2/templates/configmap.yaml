@@ -9,4 +9,5 @@ data:
 
     whoami
     sudo -i -u db2inst1 bash -c '/opt/ibm/db2/V11.5/bin/db2 -stvf /var/custom/createdb.sql -z createdb.log'
-- createdb.sql: {{ .Values.createdb }}
+- createdb.sql: |
+    {{ .Values.createdb | nindent 4 }}
