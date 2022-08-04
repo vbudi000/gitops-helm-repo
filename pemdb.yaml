@@ -1,0 +1,104 @@
+---
+# Source: ibm-sfg-db2/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: db2-db2cfg
+data:
+- createDB.sh: |
+    #!/bin/sh +
+
+    whoami
+    sudo -i -u db2inst1 bash -c '/opt/ibm/db2/V11.5/bin/db2 -stvf /var/custom/createdb.sql -z createdb.log'
+- createdb.sql: |
+    
+    CREATE DATABASE PEMDB AUTOMATIC STORAGE YES USING CODESET UTF-8 TERRITORY DEFAULT COLLATE USING IDENTITY PAGESIZE 4096;
+    CONNECT TO PEMDB;
+    UPDATE DATABASE CONFIG FOR PEMDB USING LOGFILSIZ 65536;
+    UPDATE DATABASE CONFIG FOR PEMDB USING LOGPRIMARY 40;
+    UPDATE DATABASE CONFIG FOR PEMDB USING NUM_LOG_SPAN 32;
+    UPDATE DATABASE CONFIG FOR PEMDB USING AUTO_MAINT ON;
+    UPDATE DATABASE CONFIG FOR PEMDB USING AUTO_TBL_MAINT ON;
+    UPDATE DATABASE CONFIG FOR PEMDB USING AUTO_RUNSTATS ON;
+    UPDATE DATABASE CONFIG FOR PEMDB USING AUTO_REORG ON;
+    UPDATE DATABASE CONFIG FOR PEMDB USING AUTO_DB_BACKUP ON;
+    UPDATE DATABASE CONFIG FOR PEMDB USING NCHAR_MAPPING GRAPHIC_CU16;
+    CREATE USER TEMPORARY TABLESPACE B2BUSERTEMP PAGESIZE 32K BUFFERPOOL IBMDEFAULTBP;
+    CREATE BUFFERPOOL PEMDB_04KBP IMMEDIATE SIZE 1000 PAGESIZE 4K;
+    CREATE REGULAR TABLESPACE TS_REG04_PEMDB PAGESIZE 4K BUFFERPOOL PEMDB_04KBP;
+    CREATE BUFFERPOOL PEMDB_08KBP IMMEDIATE SIZE 1000 PAGESIZE 8K;
+    CREATE REGULAR TABLESPACE TS_REG08_PEMDB PAGESIZE 8K BUFFERPOOL PEMDB_08KBP;
+    CREATE BUFFERPOOL PEMDB_16KBP IMMEDIATE SIZE 1000 PAGESIZE 16K;
+    CREATE REGULAR TABLESPACE TS_REG16_PEMDB PAGESIZE 16K BUFFERPOOL PEMDB_16KBP;
+    CREATE BUFFERPOOL PEMDB_32KBP IMMEDIATE SIZE 1000 PAGESIZE 32K;
+    CREATE REGULAR TABLESPACE TS_REG32_PEMDB PAGESIZE 32K BUFFERPOOL PEMDB_32KBP;
+    CONNECT RESET;
+---
+# Source: ibm-sfg-db2/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: db2-lb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 50000
+      targetPort: 50000
+      protocol: TCP
+  selector:
+    app: db2
+---
+# Source: ibm-sfg-db2/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db2
+  serviceName: db2
+  template:
+    metadata:
+      labels:
+        app: db2
+    spec:
+      serviceAccount: db2
+      volumes:
+      - name: db2cfg
+        configMap: db2-db2cfg
+      containers:
+        - name: db2
+          securityContext:
+            privileged: true
+          image: "ibmcom/db2:11.5.7.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: db2
+              containerPort: 50000
+          env:
+          - name: LICENSE
+            value: accept
+          - name: DB2INSTANCE
+            value: db2inst1
+          - name: DB2INST1_PASSWORD
+            value: db2inst1
+          - name: TO_CREATE_SAMBLEDB
+            value: "true"
+          volumeMounts:
+          - mountPath: /var/custom
+            name: db2cfg
+          - mountPath: /database
+            name: db2vol
+  volumeClaimTemplates:
+  - metadata:
+      name: db2vol
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 20Gi
+      storageClassName: ibmc-block-gold
