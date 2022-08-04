@@ -16,7 +16,8 @@ spec:
       serviceAccount: {{ .Values.serviceAccount }}
       volumes:
       - name: db2cfg
-        configMap: {{ .Values.name }}-db2cfg
+        configMap: 
+          name: {{ .Values.name }}-db2cfg
       containers:
         - name: db2
           securityContext:
